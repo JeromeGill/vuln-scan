@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Loads the @repo/fixtures data (users) into the development database. Safe
+# to re-run: existing rows are kept.
+#
+# Usage: script/seed
+#
+# Fixture users sign in with the password in packages/fixtures/src/data/users.ts.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+usage() { sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; }
+
+case ${1:-} in
+  "") ;;
+  -h | --help) usage; exit 0 ;;
+  *) echo "error: unknown option: $1" >&2; usage >&2; exit 1 ;;
+esac
+
+echo "==> Starting Postgres..."
+docker compose up --detach --wait
+
+pnpm exec turbo run seed --filter=api

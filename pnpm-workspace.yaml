@@ -1,0 +1,19 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+minimumReleaseAgeExclude:
+  - typeorm@1.1.2
+# Fail installs on a Node.js version outside package.json "engines".
+engineStrict: true
+updateConfig:
+  # Held at 6.x: the Nest CLI and schematics need TypeScript's compiler API,
+  # which TypeScript 7.0 doesn't ship (expected back in 7.1).
+  ignoreDependencies:
+    - typescript
+allowBuilds:
+  # Its postinstall only runs `lefthook install`; the root "prepare" script
+  # does that explicitly.
+  lefthook: false
+  # Pulled in by react-email's preview CLI, which the worker doesn't run; its
+  # postinstall only checks the platform binary.
+  esbuild: false

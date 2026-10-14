@@ -1,0 +1,72 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "tui",
+  "concurrency": "12",
+  "globalDependencies": [
+    ".env",
+    ".env.test",
+    ".env.example",
+    ".env.test.example",
+    "docker-compose.yml",
+    "tsconfig.base.json",
+    "package.json",
+    "pnpm-workspace.yaml"
+  ],
+  "globalPassThroughEnv": [
+    "NODE_ENV",
+    "PORT",
+    "DB_HOST",
+    "DB_PORT",
+    "DB_USER",
+    "DB_PASSWORD",
+    "DB_NAME",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "WEB_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GOOGLE_SIGN_IN",
+    "RABBITMQ_URL",
+    "JOB_RETRY_DELAYS_MS",
+    "SMTP_URL",
+    "MAIL_FROM",
+    "STORAGE_DRIVER",
+    "GCS_BUCKET",
+    "GCS_API_ENDPOINT",
+    "GCS_PROJECT_ID",
+    "GCS_CREDENTIALS",
+    "NEXT_DIST_DIR",
+    "E2E_MODE"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": ["API_URL"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    },
+    "test:integration": {
+      "dependsOn": ["^build"]
+    },
+    "test:e2e": {
+      "cache": false,
+      "dependsOn": ["^build", "api#build", "worker#build"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"],
+      "env": ["API_URL"]
+    },
+    "seed": {
+      "cache": false,
+      "dependsOn": ["^build"]
+    }
+  }
+}

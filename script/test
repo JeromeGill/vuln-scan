@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Runs the test suites.
+#
+# Usage: script/test [-a=APP]...
+#   -a=APP, --app=APP  Only test APP (api, web, worker, or e2e) and the
+#                      packages it uses; e2e is the browser suite. Repeat for
+#                      several apps. With no -a, every workspace is tested,
+#                      including packages no app uses, and the browser suite.
+#
+# Integration tests need Postgres, RabbitMQ, Mailpit, and the GCS emulator,
+# so docker compose is started first.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+all_apps=(api web worker e2e)
+apps=()
+
+usage() { sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; }
+
+while [ $# -gt 0 ]; do
+  case $1 in
+    -a=* | --app=*) apps+=("${1#*=}") ;;
+    -a | --app)
+      [ $# -ge 2 ] || { usage >&2; exit 1; }
+      apps+=("$2")
+      shift
+      ;;
+    -h | --help) usage; exit 0 ;;
+    *) echo "error: unknown option: $1" >&2; usage >&2; exit 1 ;;
+  esac
+  shift
+done
+filters=()
+for app in "${apps[@]}"; do
+  [[ " ${all_apps[*]} " == *" $app "* ]] || {
+    echo "error: unknown app: $app (expected one of: ${all_apps[*]})" >&2
+    exit 1
+  }
+  # `app...` includes the app's workspace dependencies (e.g. @repo/entities).
+  filters+=("--filter=$app...")
+done
+
+if [ ${#apps[@]} -eq 0 ] ||
+  [[ " ${apps[*]} " == *" api "* || " ${apps[*]} " == *" worker "* ||
+    " ${apps[*]} " == *" e2e "* ]]; then
+  echo "==> Starting the compose services for the integration tests..."
+  docker compose up --detach --wait
+fi
+
+pnpm exec turbo run test test:integration test:e2e "${filters[@]}"

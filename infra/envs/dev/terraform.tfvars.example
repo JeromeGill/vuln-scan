@@ -1,0 +1,7 @@
+# Copy to terraform.tfvars (gitignored), which tofu plan/apply read
+# automatically, and fill in this environment's values.
+project_id = "my-project-id"
+region     = "us-west1"
+
+# The web service's generated Railway domain (RAILWAY_PUBLIC_DOMAIN).
+web_origins = ["https://web-production-xxxx.up.railway.app"]

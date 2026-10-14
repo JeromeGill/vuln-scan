@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Runs the whole app locally: Postgres, RabbitMQ, and Mailpit (docker compose)
+# in the background, and the api and web dev servers and the worker (plus
+# watch builds of the packages they use) through Turbo. Ctrl-C stops the apps
+# and the containers.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+[ -f .env ] || { echo "error: .env is missing; run script/bootstrap first." >&2; exit 1; }
+
+echo "==> Starting Postgres, RabbitMQ, and Mailpit..."
+docker compose up --detach --wait
+trap 'echo "==> Stopping containers..."; docker compose stop' EXIT
+
+echo "==> Starting api (http://localhost:3002), web (http://localhost:3000), and worker..."
+echo "    Mailpit: http://localhost:8025  RabbitMQ: http://localhost:15672 (app / app)"
+# `app...` also runs the dev (watch) tasks of the app's workspace dependencies.
+pnpm exec turbo run dev --filter='api...' --filter='web...' --filter='worker...'

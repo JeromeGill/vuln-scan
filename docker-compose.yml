@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:17
+    # Values come from .env (copy .env.example). The api integration tests'
+    # database (DB_NAME in .env.test) is created in this same server.
+    environment:
+      POSTGRES_USER: ${DB_USER:?set DB_USER in .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      POSTGRES_DB: ${DB_NAME:?set DB_NAME in .env}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  # Job queue (docs/messaging.md). Local credentials only; they must match
+  # RABBITMQ_URL in .env. The worker integration tests use their own vhost
+  # (RABBITMQ_URL in .env.test), created by apps/worker/test/global-setup.ts.
+  # Management UI: http://localhost:15672 (app / app).
+  rabbitmq:
+    image: rabbitmq:4.3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: app
+      RABBITMQ_DEFAULT_PASS: app
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  # Catches every email the worker sends (SMTP_URL=smtp://localhost:1025).
+  # Inbox: http://localhost:8025.
+  mailpit:
+    image: axllent/mailpit:v1.31
+    environment:
+      # Otherwise it looks up the client's reverse DNS before greeting, which
+      # can stall each SMTP connection for seconds.
+      MP_SMTP_DISABLE_RDNS: "true"
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # Google Cloud Storage emulator: the api's storage locally and in tests
+  # (STORAGE_DRIVER=gcs with GCS_API_ENDPOINT), and the gcs driver's own
+  # tests (packages/storage/test). In memory, so objects are gone when the
+  # container restarts; the driver creates missing buckets. It allows any
+  # origin; -cors-headers adds the signed size-range header browsers send
+  # with uploads. See docs/storage.md.
+  fake-gcs:
+    image: fsouza/fake-gcs-server:1.56.1
+    entrypoint:
+      - /bin/fake-gcs-server
+      - -scheme=http
+      - -port=4443
+      - -backend=memory
+      - -external-url=http://localhost:4443
+      - -public-host=localhost:4443
+      - -cors-headers=x-goog-content-length-range
+    ports:
+      - "4443:4443"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4443/storage/v1/b"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  postgres-data:
+  rabbitmq-data:

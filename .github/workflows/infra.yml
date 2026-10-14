@@ -1,0 +1,33 @@
+# Checks the OpenTofu code in infra/ on pull requests and pushes to main that
+# touch it: formatting, and each root's validity. Offline: no credentials,
+# no backend, no plan or apply (docs/infrastructure.md#ci).
+name: Infra
+
+on:
+  pull_request:
+    paths: ["infra/**", ".github/workflows/infra.yml"]
+  push:
+    branches: [main]
+    paths: ["infra/**", ".github/workflows/infra.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.13.1
+      - run: tofu fmt -check -recursive infra
+      - name: Validate each root
+        run: |
+          for root in infra/envs/*/; do
+            echo "::group::$root"
+            tofu -chdir="$root" init -backend=false -input=false -lockfile=readonly
+            tofu -chdir="$root" validate
+            echo "::endgroup::"
+          done

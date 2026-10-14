@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# Sets up the project for local development: checks prerequisites (pnpm
+# enforces the Node.js version from package.json "engines"), installs
+# dependencies (via script/update), and creates .env files from the .example
+# templates, prompting for any values that are missing.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+fail() { echo "error: $*" >&2; exit 1; }
+
+# Checked here: inside the env-file loop below, stdin is the example file.
+interactive=false
+[ -t 0 ] && interactive=true
+
+echo "==> Checking prerequisites..."
+if ! command -v pnpm >/dev/null; then
+  echo "pnpm not found; enabling it with corepack..."
+  corepack enable pnpm || fail "Could not enable pnpm. Install it: https://pnpm.io/installation"
+fi
+command -v docker >/dev/null || fail "Docker is required to run Postgres, RabbitMQ, and Mailpit."
+docker compose version >/dev/null 2>&1 || fail "Docker Compose v2 is required."
+
+script/update
+
+# Prints the value of KEY in an env file (empty if unset).
+env_value() {
+  local file=$1 key=$2
+  [ -f "$file" ] || return 0
+  grep -E "^${key}=" "$file" | tail -n 1 | cut -d= -f2- || true
+}
+
+# Sets KEY=VALUE in an env file, replacing an existing line or appending one.
+set_env_value() {
+  local file=$1 key=$2 value=$3
+  if grep -qE "^${key}=" "$file"; then
+    K="$key" V="$value" awk -F= '
+      $1 == ENVIRON["K"] { print ENVIRON["K"] "=" ENVIRON["V"]; next }
+      { print }' "$file" >"$file.tmp" && mv "$file.tmp" "$file"
+  else
+    printf '%s=%s\n' "$key" "$value" >>"$file"
+  fi
+}
+
+# Creates FILE from EXAMPLE if needed, then fills in every key from EXAMPLE
+# that is missing or empty in FILE. Keys with a default in EXAMPLE use it
+# (offered as the prompt default); secrets without one can be generated.
+sync_env_file() {
+  local example=$1 file=$2
+  [ -f "$example" ] || return 0
+
+  if [ ! -f "$file" ]; then
+    echo "==> Creating $file from $example"
+    cp "$example" "$file"
+  else
+    echo "==> Checking $file against $example"
+  fi
+
+  local key default current value
+  while IFS= read -r line; do
+    [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]] || continue
+    key=${BASH_REMATCH[1]}
+    default=${BASH_REMATCH[2]}
+    current=$(env_value "$file" "$key")
+    [ -n "$current" ] && continue
+
+    value=""
+    if $interactive; then
+      if [[ "$key" == *SECRET* && -z "$default" ]]; then
+        read -r -s -p "$key (leave empty to generate): " value </dev/tty
+        echo
+      elif [[ "$key" == *SECRET* || "$key" == *PASSWORD* ]]; then
+        read -r -s -p "$key [keep default]: " value </dev/tty
+        echo
+      else
+        read -r -p "$key [$default]: " value </dev/tty
+      fi
+    fi
+    value=${value:-$default}
+    if [ -z "$value" ] && [[ "$key" == *SECRET* ]]; then
+      value=$(openssl rand -base64 32)
+      echo "    generated $key"
+    fi
+    [ -n "$value" ] || fail "$key in $file needs a value."
+    set_env_value "$file" "$key" "$value"
+  done <"$example"
+}
+
+sync_env_file .env.example .env
+sync_env_file .env.test.example .env.test
+
+echo "==> Installing Chromium for the browser tests (apps/e2e)..."
+pnpm --filter e2e exec playwright install chromium
+
+echo "==> Bootstrap complete. Start everything with: script/server"

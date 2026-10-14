@@ -1,0 +1,132 @@
+# On a release tag (v*): runs the test suites of the apps affected since the
+# last release that passed, and if they pass, applies .railway/railway.ts and
+# deploys the api, worker, and web to Railway. See docs/deployment.md.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+env:
+  RAILWAY_CLI_VERSION: 5.64.2
+
+permissions:
+  contents: read
+  # `gh run list`, to find the last release that passed.
+  actions: read
+
+jobs:
+  # Picks the test suites to run: the apps affected since the last release
+  # whose workflow passed (.github/scripts/affected-apps), or all of them when there
+  # isn't one.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.apps.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # The whole history and tags, to diff against the base release.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: apps
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          base=$(gh run list --workflow release.yml --status success --limit 100 \
+            --json headBranch --jq '.[].headBranch' |
+            while read -r tag; do
+              if git merge-base --is-ancestor "refs/tags/$tag" HEAD 2>/dev/null; then
+                echo "$tag"
+                break
+              fi
+            done)
+          echo "apps=$(.github/scripts/affected-apps "$base")" >> "$GITHUB_OUTPUT"
+
+  test:
+    name: test (${{ matrix.app }})
+    needs: changes
+    if: needs.changes.outputs.apps != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.changes.outputs.apps) }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The local defaults (docker compose credentials, test database and
+      # vhost) work as is; only the secrets need values.
+      - name: Create .env files
+        run: |
+          cp .env.example .env
+          cp .env.test.example .env.test
+          sed -i "s|^BETTER_AUTH_SECRET=.*|BETTER_AUTH_SECRET=$(openssl rand -base64 32)|" .env
+      - if: matrix.app == 'e2e'
+        run: pnpm --filter e2e exec playwright install --with-deps chromium
+      - run: script/test -a=${{ matrix.app }}
+      - if: failure() && matrix.app == 'e2e'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/e2e/playwright-report/
+            apps/e2e/test-results/
+          retention-days: 14
+
+  # Brings the Railway project's settings and variables in line with
+  # .railway/railway.ts before deploying. Refuses destructive changes (a
+  # deleted service, volume, or variable): apply those by hand after
+  # reviewing `railway config plan`.
+  config:
+    needs: test
+    # Also when no suite needed to run (test skipped), but not after a failure.
+    if: ${{ !cancelled() && !failure() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      # The config file imports the `railway` SDK.
+      - run: pnpm install --frozen-lockfile
+      - run: npx --yes @railway/cli@${{ env.RAILWAY_CLI_VERSION }} config apply --yes
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          # Which project, repo, and bucket .railway/railway.ts targets:
+          # repository variables (Settings → Secrets and variables →
+          # Actions → Variables). RAILWAY_GITHUB_REPO defaults to this repo.
+          RAILWAY_PROJECT_NAME: ${{ vars.RAILWAY_PROJECT_NAME }}
+          RAILWAY_GITHUB_REPO: ${{ vars.RAILWAY_GITHUB_REPO }}
+          RAILWAY_GCS_BUCKET: ${{ vars.RAILWAY_GCS_BUCKET }}
+
+  deploy:
+    needs: config
+    if: ${{ !cancelled() && !failure() }}
+    runs-on: ubuntu-latest
+    # A Railway build takes a few minutes; without a limit a stuck one would
+    # hold the job for GitHub's default of six hours.
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        service: [api, worker, web]
+    steps:
+      - uses: actions/checkout@v5
+      # Uploads the checkout and builds it on Railway with the service's
+      # settings from .railway/railway.ts; fails if the build fails.
+      - run: npx --yes @railway/cli@${{ env.RAILWAY_CLI_VERSION }} up --ci --service ${{ matrix.service }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

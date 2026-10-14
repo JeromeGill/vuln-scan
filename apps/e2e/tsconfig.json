@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "declaration": false,
+    "declarationMap": false,
+    "lib": ["es2023", "DOM"],
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts", "tests", "helpers"],
+  "exclude": ["node_modules"]
+}

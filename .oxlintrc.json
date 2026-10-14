@@ -1,0 +1,76 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "env": {
+    "builtin": true,
+    "es2024": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/.next/**",
+    "**/.next-e2e/**",
+    "apps/web/next-env.d.ts"
+  ],
+  "rules": {
+    "import/no-unassigned-import": [
+      "warn",
+      {
+        "allow": ["**/*.css", "server-only", "@testing-library/jest-dom/vitest"]
+      }
+    ],
+    "typescript/no-extraneous-class": [
+      "warn",
+      {
+        "allowWithDecorator": true
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["apps/web/**"],
+      "plugins": ["react", "jsx-a11y", "nextjs"],
+      "env": {
+        "browser": true
+      },
+      "rules": {
+        "react/react-in-jsx-scope": "off"
+      }
+    },
+    {
+      "files": ["apps/web/public/sw.js"],
+      "env": {
+        "browser": false,
+        "node": false,
+        "serviceworker": true
+      }
+    },
+    {
+      "files": [
+        "apps/api/**/*.spec.ts",
+        "apps/api/test/**",
+        "apps/worker/**/*.spec.ts",
+        "apps/worker/test/**",
+        "apps/web/test/**",
+        "packages/*/src/**/*.spec.ts",
+        "packages/*/src/testing/**",
+        "packages/*/test/**"
+      ],
+      "plugins": ["vitest"]
+    },
+    {
+      "files": ["apps/api/test/**", "apps/worker/test/**"],
+      "plugins": ["vitest"],
+      "rules": {
+        "vitest/expect-expect": [
+          "error",
+          { "assertFunctionNames": ["expect", "**.expect"] }
+        ]
+      }
+    }
+  ]
+}

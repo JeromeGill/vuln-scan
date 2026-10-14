@@ -1,0 +1,47 @@
+# Git hooks, installed by `pnpm install` (root "prepare" script runs
+# `lefthook install`). Skip once with `git commit --no-verify` or LEFTHOOK=0.
+
+pre-commit:
+  # Format first (it rewrites files), then lint and type-check in parallel.
+  jobs:
+    - name: format
+      glob: "*.{js,jsx,mjs,cjs,ts,tsx,mts,cts,json,jsonc,md,css,yml,yaml}"
+      exclude:
+        - pnpm-lock.yaml
+      run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files}
+      # Re-stage the formatted files so the commit includes the fixes.
+      stage_fixed: true
+
+    # OpenTofu files (infra/); needs `tofu` installed (docs/infrastructure.md).
+    - name: format-tofu
+      glob: "*.{tf,tfvars}"
+      run: tofu fmt {staged_files}
+      stage_fixed: true
+
+    - group:
+        parallel: true
+        jobs:
+          - name: lint
+            glob: "*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"
+            run: pnpm exec oxlint --deny-warnings {staged_files}
+
+          # Whole-project check: a change in one file can break types
+          # elsewhere. Runs package check-types scripts directly rather than
+          # through Turbo, where web's check-types waits for a full
+          # `next build`.
+          - name: types
+            # `**/` only matches inside a directory, so root files are listed
+            # separately.
+            glob:
+              - "*.{ts,tsx,mts,cts}"
+              - "tsconfig*.json"
+              - "**/tsconfig*.json"
+              - "package.json"
+              - "**/package.json"
+              - "pnpm-lock.yaml"
+            run: pnpm -r --reporter=append-only run check-types
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: pnpm exec commitlint --edit {1}

@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["es2023"],
+    "types": ["node", "vitest/globals"],
+    "outDir": "./dist"
+  },
+  "include": ["src", "test", "*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -1,0 +1,41 @@
+{
+  "name": "@repo/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./shared": {
+      "types": "./src/shared.ts",
+      "default": "./dist/shared.js"
+    },
+    "./api": {
+      "types": "./src/api.ts",
+      "default": "./dist/api.js"
+    },
+    "./web": {
+      "types": "./src/web.ts",
+      "default": "./dist/web.js"
+    },
+    "./worker": {
+      "types": "./src/worker.ts",
+      "default": "./dist/worker.js"
+    },
+    "./e2e": {
+      "types": "./src/e2e.ts",
+      "default": "./dist/e2e.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@t3-oss/env-core": "^0.13.11",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "^6.0.3"
+  }
+}

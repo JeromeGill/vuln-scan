@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Updates every dependency in all apps and packages to the newest version its
+# package.json range allows, then reinstalls. Ranges are never widened, so
+# this never crosses a major version or a deliberate hold such as TypeScript's
+# `^6`. Moving to a new major is a separate, deliberate upgrade: change the
+# range by hand on its own branch.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+echo "==> Updating dependencies within their package.json ranges..."
+# Internal @repo/* packages are excluded so their workspace: links stay.
+pnpm update --recursive '!@repo/*'
+
+echo "==> Installing..."
+pnpm install
+
+echo "==> Done. Review the changes to package.json files and pnpm-lock.yaml."

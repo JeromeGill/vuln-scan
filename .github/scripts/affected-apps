@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Prints, as a JSON array, the apps whose test suites a release must run
+# because something they depend on changed since BASE (a git ref: the last
+# release whose workflow passed). The release workflow uses it as its test
+# matrix (.github/workflows/release.yml, docs/deployment.md#releases).
+#
+# Usage: .github/scripts/affected-apps [BASE]
+#   Without BASE, every app is printed.
+#
+# - Packages come from Turbo's graph (`turbo ls --affected`): an app is
+#   affected when its own files or a workspace package it depends on changed
+#   (e.g. @repo/entities → api and worker), or a global dependency in
+#   turbo.json did (lockfile, tsconfig.base.json, docker-compose.yml, …).
+# - e2e also runs when api, web, or worker is affected: it runs their builds
+#   by path, which the package graph doesn't see.
+# - Changes to .github/ or script/ (how the suites run) select every app.
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+
+all='["api","web","worker","e2e"]'
+base=${1:-}
+
+if [ -z "$base" ]; then
+  echo "no base release: testing every app" >&2
+  echo "$all"
+  exit 0
+fi
+
+ci_changes=$(git diff --name-only "$base" HEAD -- .github script)
+if [ -n "$ci_changes" ]; then
+  echo "CI files changed since $base: testing every app" >&2
+  echo "$all"
+  exit 0
+fi
+
+affected=$(TURBO_SCM_BASE=$base pnpm exec turbo ls --affected --output=json |
+  jq -c '[.packages.items[].name]')
+echo "packages affected since $base: $affected" >&2
+
+jq -cn --argjson affected "$affected" '
+  ["api", "web", "worker"] | map(select(. as $app | $affected | index($app)))
+  | . + (if length > 0 or ($affected | index("e2e")) then ["e2e"] else [] end)'

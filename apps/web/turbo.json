@@ -1,0 +1,11 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "check-types": {
+      // `next build` and `next typegen` both write .next/types; running them
+      // in parallel makes tsc intermittently miss generated files.
+      "dependsOn": ["^check-types", "build"]
+    }
+  }
+}
