@@ -1,21 +1,11 @@
 # nest-template
 
-pnpm + Turborepo monorepo:
-
-- `apps/web`: [Next.js](https://nextjs.org/) 16 app (React 19)
-- `apps/api`: [NestJS](https://nestjs.com/) 12 server with
-  [Better Auth](https://www.better-auth.com/) and
-  [TypeORM](https://typeorm.io/) on Postgres
-- `apps/worker`: NestJS 12 worker consuming [RabbitMQ](https://www.rabbitmq.com/)
-  jobs (sends the verification emails)
-- `@repo/config`: validated environment config for `api`, `web`, and `worker`
-- `@repo/contracts`: oRPC route contracts (zod) shared by `api` and clients
-- `@repo/entities`: TypeORM entities used by `api` and `worker`
-- `@repo/events`: queue message schemas (zod, exported as JSON Schema)
-- `@repo/fixtures`: sample data (users) for development
-- `@repo/storage`: provider-neutral object storage (a GCS driver)
-- `infra/`: OpenTofu for the GCP resources; `.railway/railway.ts`: the
-  Railway deployment
+pnpm + Turborepo monorepo: a [Next.js](https://nextjs.org/) web app, a
+[NestJS](https://nestjs.com/) api with [Better Auth](https://www.better-auth.com/)
+and [TypeORM](https://typeorm.io/) on Postgres, and a NestJS worker consuming
+[RabbitMQ](https://www.rabbitmq.com/) jobs, plus shared packages. The apps and
+packages are described in [Architecture](docs/architecture.md), and each
+package's own `README.md`.
 
 ## Quick start
 
@@ -53,5 +43,5 @@ See [`docs/`](docs/README.md): [architecture](docs/architecture.md),
 [development guide](docs/development.md), [testing](docs/testing.md),
 [configuration](docs/configuration.md), [database](docs/database.md),
 [messaging](docs/messaging.md), [authentication](docs/auth.md),
-[decisions](docs/decisions.md), and
+[decisions](docs/decisions/README.md), and
 [troubleshooting](docs/troubleshooting.md).

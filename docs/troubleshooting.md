@@ -30,7 +30,7 @@ package), run `pnpm clean --lockfile && pnpm install`.
 
 Something installed TypeScript 7, usually a `pnpm update --latest` run,
 which pnpm 12 does despite `updateConfig.ignoreDependencies`. Keep it at 6.x
-(see [Decisions](decisions.md#typescript-held-at-6x)): set every
+(see [Decisions](decisions/typescript-held-at-6x.md)): set every
 `package.json` back to `"typescript": "^6.0.3"` and run `pnpm install`.
 `script/update` stays within ranges, so it doesn't do this.
 

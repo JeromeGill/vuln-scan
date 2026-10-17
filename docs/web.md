@@ -180,7 +180,7 @@ horizontal scrolling. The conventions that keep it that way:
 ## PWA
 
 The web app is an installable progressive web app (why not a native app:
-[Decisions](decisions.md#a-pwa-not-a-native-app)): browsers offer to install it,
+[Decisions](decisions/a-pwa-not-a-native-app.md)): browsers offer to install it,
 and it opens standalone at `/`, which redirects to `/dashboard` or `/login`.
 
 - **Manifest:** `app/manifest.ts` (served at `/manifest.webmanifest`):
@@ -203,7 +203,7 @@ and it opens standalone at `/`, which redirects to `/dashboard` or `/login`.
   padding at the top; `formatDetection` stops iOS turning numbers into phone
   links.
 - **Service worker:** `public/sw.js`, hand-written (why: see
-  [Decisions](decisions.md#hand-written-service-worker)), registered by
+  [Decisions](decisions/hand-written-service-worker.md)), registered by
   `components/service-worker.tsx` in production builds only:
   - Other origins are left alone, notably signed object storage URLs
     (uploads and downloads go straight to the bucket).

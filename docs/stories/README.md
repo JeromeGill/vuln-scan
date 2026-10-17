@@ -4,10 +4,13 @@ Every feature has a user story here: what it does for the user and how to tell
 it's done. They replace an external tracker. Stories are versioned with the
 code, reviewed in the same branches, and linked to commits by a trailer.
 
-| ID  | Title | Status |
-| --- | ----- | ------ |
+There is no index table to keep up (it made every story PR conflict): the
+folder is the list, and each story's frontmatter holds its status. To see
+them all:
 
-None yet: the first story is S-0001.
+```sh
+grep -H -e "^title:" -e "^status:" docs/stories/[0-9]*.md
+```
 
 ## Writing a story
 
@@ -15,8 +18,7 @@ None yet: the first story is S-0001.
    (`gh pr list`, `git branch -a`), since a number in use there isn't free.
 2. Copy [`_template.md`](_template.md) to `NNNN-short-slug.md`, and fill in
    the story and acceptance criteria. Set `status: proposed`.
-3. Add it to the table above.
-4. Commit it on its own (`docs(stories): add S-NNNN <title>`) on a `docs/`
+3. Commit it on its own (`docs(stories): add S-NNNN <title>`) on a `docs/`
    branch and merge it to `main` in its own small PR, so the number is taken
    before work starts. The feature is then built on a branch named after the
    story: `feat/S-NNNN-short-slug`.
@@ -31,7 +33,7 @@ them. Implementation details belong in the Implementation section, filled in
 when the story is done.
 
 Statuses are `proposed`, `in-progress`, `done`, and `dropped`. Update the
-status in the story and in the table as the work moves. A dropped story stays
+status in the story's frontmatter as the work moves. A dropped story stays
 in the folder so its number isn't reused.
 
 Stories describe current behaviour, so keep them in step with the code. When

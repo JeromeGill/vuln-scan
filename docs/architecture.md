@@ -115,7 +115,7 @@ apps/web (Next.js)
   adds its own options: Next.js settings in `apps/web`, decorators
   (`experimentalDecorators`, `emitDecoratorMetadata`) in `apps/api`,
   `apps/worker`, and `packages/entities`. Why not TypeScript 7: see
-  [Decisions](decisions.md#typescript-held-at-6x).
+  [Decisions](decisions/typescript-held-at-6x.md).
 
 ## Configuration
 

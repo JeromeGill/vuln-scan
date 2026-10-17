@@ -300,4 +300,4 @@ change the range in the `package.json` files that use it (or run
 read its changelog, and run the checks above. Don't run `pnpm update --latest`
 without a package name: it upgrades everything, and pnpm 12 also bumps
 TypeScript past the 6.x hold (see
-[Decisions](decisions.md#typescript-held-at-6x)).
+[Decisions](decisions/typescript-held-at-6x.md)).

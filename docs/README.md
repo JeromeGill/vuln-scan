@@ -21,7 +21,7 @@ them in the same change when you alter what they describe (see
 | [Stories](stories/README.md)          | starting a feature or fix, or asking what a feature is meant to do               |
 | [Plans](plans/README.md)              | the work is bigger or less certain than one story (new platform, new test layer) |
 | [Glossary](glossary.md)               | naming things, or reading a story: what the app's words mean                     |
-| [Decisions](decisions.md)             | wondering why something is done a non-obvious way                                |
+| [Decisions](decisions/README.md)      | wondering why something is done a non-obvious way                                |
 | [Troubleshooting](troubleshooting.md) | something fails in a way you didn't expect                                       |
 
 New here? Read [Architecture](architecture.md), then the setup section of the
@@ -31,7 +31,7 @@ New here? Read [Architecture](architecture.md), then the setup section of the
 
 - Docs describe the code as it is. When a change makes a page wrong (renamed
   file, new script, different behaviour), fix the page in the same commit.
-- Add a [decision](decisions.md) entry when you choose something a future
+- Add a [decision](decisions/README.md) entry when you choose something a future
   reader would otherwise question or undo.
 - Add a [troubleshooting](troubleshooting.md) entry when you hit and solve a
   confusing failure.

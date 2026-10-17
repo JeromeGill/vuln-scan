@@ -191,7 +191,7 @@ worker.
   with an `Invalid environment variables` error and Railway restarts it
   until it gives up. Jobs wait in the queue meanwhile, so nothing is lost;
   setting the variables redeploys the worker. See
-  [Decisions](decisions.md#email-settings-have-no-defaults).
+  [Decisions](decisions/email-settings-have-no-defaults.md).
 
 Set them in the worker's **Variables** tab, or with the CLI (reading the
 key from a prompt keeps it out of the shell history):
@@ -314,7 +314,7 @@ The workflow's jobs:
    (respecting `.gitignore`), builds it on Railway with the service's
    settings, and fails if the build does. Each deploy job times out after
    20 minutes. The three are always deployed
-   together (see [Decisions](decisions.md)).
+   together (see [Decisions](decisions/README.md)).
 
 ### Skipping unaffected suites
 
