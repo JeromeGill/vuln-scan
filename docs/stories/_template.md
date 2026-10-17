@@ -15,7 +15,7 @@ As a <kind of user>, I want <capability>, so that <benefit>.
 
 ## Notes
 
-Out of scope, open questions, links to [decisions](../decisions.md).
+Out of scope, open questions, links to [decisions](../decisions/README.md).
 
 ## Implementation
 

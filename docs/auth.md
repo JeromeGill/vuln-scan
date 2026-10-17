@@ -139,7 +139,7 @@ without Google.
   `${API_URL}/api/auth/*` (and other `/api/*` to the api's oRPC routes,
   which need the same cookie). The browser only talks to `localhost:3000`, so the
   session cookie belongs to the web origin and no CORS is involved. Why: see
-  [Decisions](decisions.md#web-proxies-auth-to-the-api).
+  [Decisions](decisions/web-proxies-auth-to-the-api.md).
 - **Client:** `apps/web/lib/auth-client.ts` creates the client with
   `createAuthClient()` and **no `baseURL`**, so it calls the web origin, which
   is the proxy. It exports `signIn`, `signUp`, `signOut`, and

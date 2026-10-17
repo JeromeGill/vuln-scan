@@ -61,7 +61,7 @@ Integration specs end in `.integration.spec.ts` and live under `test/`; the
 unit configs only include `src/**/*.spec.ts`, so `pnpm --filter api test`
 never runs them. These suites used to be called "e2e" (`*.e2e-spec.ts`,
 `test:e2e`); that name now means the [browser tests](#browser-tests), see
-[Decisions](decisions.md#integration-not-e2e-for-the-api-and-worker-suites).
+[Decisions](decisions/integration-not-e2e-for-the-api-and-worker-suites.md).
 
 ## How integration tests run
 
@@ -153,7 +153,7 @@ through.
 Every contract route has its own spec file in `apps/api/test/<resource>/`,
 and its successful requests come from cases in `@repo/fixtures/api` that
 the web tests share (why: see
-[Decisions](decisions.md#one-api-spec-per-endpoint-with-shared-request-and-response-cases)).
+[Decisions](decisions/one-api-spec-per-endpoint-with-shared-request-and-response-cases.md)).
 Every new route gets the same: follow the checklist below.
 `test/account/get-account.integration.spec.ts` is the one so far (a route
 with no body, so plain `it`s and no cases).

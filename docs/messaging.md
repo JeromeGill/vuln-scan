@@ -6,7 +6,7 @@ of job: sending email. The api publishes verification emails. The setup is
 meant to grow to other job types (e.g. scans) and to workers in other languages (e.g. Python), so
 everything on the wire is plain JSON described by JSON Schema, and the
 topology is a convention any AMQP client can follow. Why RabbitMQ and not
-Nest's transports: see [Decisions](decisions.md#rabbitmq-job-queue-for-background-work).
+Nest's transports: see [Decisions](decisions/rabbitmq-job-queue-for-background-work.md).
 
 ```
 producers (the api: verification emails)
