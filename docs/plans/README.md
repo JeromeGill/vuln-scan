@@ -13,10 +13,9 @@ the PR that does the work with `Fixes #N`.
 Stories say _what_ the user gets and how to tell it's done. Plans say _how we
 get there_ when that isn't obvious. Many features need no plan at all.
 
-| ID  | Title | Status |
-| --- | ----- | ------ |
-
-None yet: the first plan is P-0001.
+| ID                                         | Title                                           | Status   |
+| ------------------------------------------ | ----------------------------------------------- | -------- |
+| [P-0001](0001-vulnerability-monitoring.md) | Vulnerability monitoring for uploaded lockfiles | accepted |
 
 ## Writing a plan
 
