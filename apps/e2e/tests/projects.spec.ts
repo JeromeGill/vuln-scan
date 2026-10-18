@@ -2,6 +2,7 @@ import type { Page } from "@playwright/test";
 import { projects } from "@repo/fixtures";
 import { createProject, signUp, uniqueSuffix } from "../helpers/api.ts";
 import { expect, test } from "../fixtures.ts";
+import { expectToFit, expectWithin } from "../helpers/layout.ts";
 
 const [storefront, adminDashboard] = projects;
 
@@ -119,19 +120,5 @@ test("S-0001 AC7: the dashboard and the create dialog fit a 360 px screen", asyn
     "Use at most 100 characters.",
   );
   await expectToFit(page);
-  const box = await dialog.boundingBox();
-  expect(box && box.x >= 0 && box.x + box.width <= 360).toBe(true);
+  await expectWithin(dialog, 360);
 });
-
-/** Neither the page nor a table on it scrolls sideways. */
-async function expectToFit(page: Page) {
-  const overflowing = await page.evaluate(() =>
-    [
-      document.documentElement,
-      ...document.querySelectorAll("[data-slot=table-container]"),
-    ]
-      .filter((element) => element.scrollWidth > element.clientWidth)
-      .map((element) => element.tagName),
-  );
-  expect(overflowing).toEqual([]);
-}

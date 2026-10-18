@@ -1,7 +1,13 @@
 import type { ORPCErrorJSON } from "@orpc/client";
 import type { InferContractRouterOutputs } from "@orpc/contract";
-import type { AccountDto, Contract, ProjectDto } from "@repo/contracts";
-import { projects, users } from "@repo/fixtures";
+import type {
+  AccountDto,
+  Contract,
+  CreatedUploadTokenDto,
+  ProjectDto,
+  UploadTokenDto,
+} from "@repo/contracts";
+import { projects, uploadTokens, users } from "@repo/fixtures";
 import { HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
@@ -45,5 +51,41 @@ export function aProject(fields: Partial<ProjectDto> = {}): ProjectDto {
     createdAt: new Date("2026-10-01T09:00:00Z"),
     updatedAt: new Date("2026-10-01T09:00:00Z"),
     ...fields,
+  };
+}
+
+/**
+ * An upload token as the api lists it: the first fixture token, created by
+ * `anAccount()`, with `fields` on top.
+ */
+export function anUploadToken(
+  fields: Partial<UploadTokenDto> = {},
+): UploadTokenDto {
+  const [{ name }] = uploadTokens;
+  const { id: creatorId, name: creatorName } = anAccount();
+  return {
+    id: "00000000-0000-4000-8000-000000000201",
+    name,
+    lastFour: "Xy9_",
+    createdBy: { id: creatorId, name: creatorName },
+    createdAt: new Date("2026-10-02T09:00:00Z"),
+    lastUsedAt: null,
+    expiresAt: null,
+    ...fields,
+  };
+}
+
+/**
+ * A new upload token as the api returns it once: `anUploadToken(fields)`
+ * with its full `token`.
+ */
+export function aCreatedUploadToken(
+  fields: Partial<CreatedUploadTokenDto> = {},
+): CreatedUploadTokenDto {
+  const token =
+    fields.token ?? "vs_8kJ2mQ4nR6tV0wX3yZ5aB7cD9eF1gH3iJ5kL7mN9Xy9_";
+  return {
+    ...anUploadToken({ lastFour: token.slice(-4), ...fields }),
+    token,
   };
 }

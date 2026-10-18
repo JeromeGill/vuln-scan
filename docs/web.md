@@ -7,7 +7,7 @@
 [TanStack Query](https://tanstack.com/query) through the oRPC client. So
 far it has the account pages (sign-up, login, email verification), the
 dashboard listing the user's projects (`/dashboard`, with the create
-dialog), and a minimal project page (`/projects/<id>`).
+dialog), and the project page (`/projects/<id>`) with its upload tokens.
 
 ## Layout
 
@@ -28,6 +28,7 @@ apps/web/
 ├── containers/               feature UI: one folder per feature
 │   ├── dashboard/            the dashboard: the projects table and the create dialog
 │   ├── projects/             projects table, columns, name form, create dialog, project page
+│   ├── upload-tokens/        the project page's Tokens section: table, columns, form, create dialog (shows the token once), expiry helpers
 │   └── offline/              retry-button
 ├── components/
 │   ├── ui/                   shadcn components (generated; see below)
