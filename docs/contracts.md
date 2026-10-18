@@ -17,6 +17,10 @@ packages/contracts/src/
 ├── account/
 │   ├── schemas.ts     response shapes and POST/PATCH bodies
 │   └── contracts.ts   the routes
+├── environments/      nested under a project: /projects/{projectId}/environments
+│   ├── schemas.ts
+│   ├── params.ts
+│   └── contracts.ts
 ├── projects/
 │   ├── schemas.ts
 │   ├── params.ts      GET query parameters (and `projectIdParams`)
@@ -65,6 +69,7 @@ import them.
 | projects      | `GET /projects` (paginated, newest first), `POST /projects`, `GET /projects/{id}`, `PATCH /projects/{id}` (rename), `DELETE /projects/{id}`: the active organization's projects ([S-0001](stories/0001-projects.md))                                                                                                           |
 | upload-tokens | `GET /projects/{projectId}/upload-tokens` (paginated, newest first; revoked tokens left out), `POST /projects/{projectId}/upload-tokens` (the response is the only one with the full `token`), `DELETE /projects/{projectId}/upload-tokens/{id}` (revoke): a project's upload tokens ([S-0002](stories/0002-upload-tokens.md)) |
 | uploads       | `POST /uploads` (multipart: `environment`, `version`, `path`, `file`; `Authorization: Bearer <upload token>`, no session): stores a lockfile in the token's project, creating its environment and release ([S-0003](stories/0003-upload-lockfiles.md))                                                                         |
+| environments  | `GET /projects/{projectId}/environments` (paginated, by name): a project's environments, each with its live release's `version` and `uploadedAt`, when a file of that release was last uploaded ([S-0003](stories/0003-upload-lockfiles.md))                                                                                   |
 
 `account` is an example: it shows the whole path from the web app's client
 through the proxy to an `@Implement`ed controller. The web app no longer
@@ -96,6 +101,12 @@ for a file over 20 MB and `SERVICE_UNAVAILABLE` (503) without storage,
 both declared on the route with `.errors()`. The validation messages (the
 environment name rule, the supported file names) are for the CI log, in
 the `BAD_REQUEST`'s `data.issues`.
+
+`environments` reads what uploads create. Like `upload-tokens`, it's
+under a project and checks the project first. Only the live release is
+listed; its `uploadedAt` is the newest `updated_at` of its lockfiles, read
+in a second query rather than a join, so the page isn't paginated with
+TypeORM's extra `DISTINCT` query.
 
 Body schemas a web form validates with carry their own messages
 (`projectNameSchema`: "Enter a name.", "Use at most 100 characters."),

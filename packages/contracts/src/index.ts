@@ -1,4 +1,5 @@
 import { accountContract } from "./account/contracts.js";
+import { environmentsContract } from "./environments/contracts.js";
 import { projectsContract } from "./projects/contracts.js";
 import { uploadTokensContract } from "./upload-tokens/contracts.js";
 import { uploadsContract } from "./uploads/contracts.js";
@@ -6,6 +7,9 @@ import { uploadsContract } from "./uploads/contracts.js";
 export * from "./account/contracts.js";
 export * from "./account/schemas.js";
 export * from "./base.js";
+export * from "./environments/contracts.js";
+export * from "./environments/params.js";
+export * from "./environments/schemas.js";
 export * from "./projects/contracts.js";
 export * from "./projects/params.js";
 export * from "./projects/schemas.js";
@@ -18,6 +22,7 @@ export * from "./uploads/schemas.js";
 /** The whole API. The api implements it; clients are built from it. */
 export const contract = {
   account: accountContract,
+  environments: environmentsContract,
   projects: projectsContract,
   uploadTokens: uploadTokensContract,
   uploads: uploadsContract,
