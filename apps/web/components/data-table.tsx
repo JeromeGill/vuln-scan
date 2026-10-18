@@ -116,7 +116,12 @@ export function DataTable<
             ))
           ) : (
             <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={columnCount} className="p-0">
+              {/* The cell doesn't wrap by default, which would push a long
+                  description past a phone's edge. */}
+              <TableCell
+                colSpan={columnCount}
+                className="p-0 whitespace-normal"
+              >
                 {empty}
               </TableCell>
             </TableRow>

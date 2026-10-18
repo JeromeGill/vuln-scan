@@ -190,10 +190,14 @@ test("S-0002 AC6: the Tokens section and its dialogs fit a 360 px screen", async
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 740 });
-  const project = await createProject(
-    page.request,
-    uniqueName(storefront.name),
-  );
+  const project = await openNewProject(page);
+  await expect(
+    page
+      .getByRole("region", { name: "Tokens" })
+      .getByText("No tokens yet", { exact: true }),
+  ).toBeVisible();
+  await expectToFit(page);
+
   // 100 characters without a space, the longest name there can be.
   const suffix = uniqueSuffix();
   const long = await createUploadToken(
@@ -202,7 +206,7 @@ test("S-0002 AC6: the Tokens section and its dialogs fit a 360 px screen", async
     "a".repeat(100 - suffix.length) + suffix,
     365,
   );
-  await page.goto(`/projects/${project.id}`);
+  await page.reload();
   await expect(tokenRow(page, long.name)).toBeVisible();
   await expectToFit(page);
 
