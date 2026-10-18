@@ -5,8 +5,9 @@
 [TanStack Table](https://tanstack.com/table) v9,
 [TanStack Form](https://tanstack.com/form), and
 [TanStack Query](https://tanstack.com/query) through the oRPC client. So
-far it has the account pages (sign-up, login, email verification) and a
-signed-in placeholder, `/dashboard`.
+far it has the account pages (sign-up, login, email verification), the
+dashboard listing the user's projects (`/dashboard`, with the create
+dialog), and a minimal project page (`/projects/<id>`).
 
 ## Layout
 
@@ -21,10 +22,12 @@ apps/web/
 │   ├── offline/page.tsx      static "You're offline" page (service worker fallback)
 │   ├── (auth)/               /login, /sign-up, /check-inbox (redirect to /dashboard if signed in)
 │   ├── (app)/                signed-in area: layout checks the session
-│   │   └── dashboard/page.tsx
+│   │   ├── dashboard/page.tsx
+│   │   └── projects/[id]/page.tsx
 │   └── verify-email/         public: where verification links land (→ /dashboard, or a new link)
 ├── containers/               feature UI: one folder per feature
-│   ├── dashboard/            the signed-in placeholder (loads GET /account)
+│   ├── dashboard/            the dashboard: the projects table and the create dialog
+│   ├── projects/             projects table, columns, name form, create dialog, project page
 │   └── offline/              retry-button
 ├── components/
 │   ├── ui/                   shadcn components (generated; see below)
@@ -35,6 +38,7 @@ apps/web/
 │   ├── auth-client.ts        Better Auth React client
 │   ├── brand.ts, app-icon.tsx  name, colours, and the icon renderer
 │   ├── build.ts              build-time constants (NODE_ENV, service worker version)
+│   ├── format.ts             dates in the user's locale
 │   └── utils.ts
 ├── public/sw.js              the service worker
 └── test/                     component tests (Vitest, Testing Library, MSW); see Testing
@@ -108,8 +112,12 @@ timestamp), build the form schema from the contract's fields
 (`createWidgetSchema.extend({ … })`) rather than writing new rules.
 `components/form-field.tsx` renders the label, control, and errors for a
 field, showing errors once it's touched (submitting touches every field).
-Errors from the api (e.g. a `CONFLICT`) are shown at the bottom of the form;
-success shows a toast (sonner) and invalidates the affected queries. The
+Errors from the api are shown in the form: on the field they're about when
+there is one (a `CONFLICT` for a taken name goes on the name field with
+`formApi.setFieldMeta`, as an `onSubmit` error, which the field's next valid
+change clears; see `containers/projects/project-form.tsx`), otherwise at the
+bottom of the form. Success shows a toast (sonner) and invalidates the
+affected queries. The
 auth forms (`app/(auth)/`) follow the same pattern with Better Auth's
 client instead of oRPC.
 

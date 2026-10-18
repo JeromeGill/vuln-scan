@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import type { APIRequestContext } from "@playwright/test";
 import { fixturePassword, users } from "@repo/fixtures";
+import { z } from "zod";
 import { verificationLink } from "./mailpit.ts";
 
 /**
@@ -44,4 +45,12 @@ export async function signUp(request: APIRequestContext) {
     throw new Error(`Opening the verification link: ${response.status()}`);
   }
   return user;
+}
+
+const createdProject = z.object({ id: z.uuid(), name: z.string() });
+
+/** Creates a project named `name` in the signed-in user's organization. */
+export async function createProject(request: APIRequestContext, name: string) {
+  const response = await post(request, "/projects", { name });
+  return createdProject.parse(await response.json());
 }

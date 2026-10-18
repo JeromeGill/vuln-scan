@@ -63,8 +63,8 @@ import them.
 | upload-tokens | `GET /projects/{projectId}/upload-tokens` (paginated, newest first; revoked tokens left out), `POST /projects/{projectId}/upload-tokens` (the response is the only one with the full `token`), `DELETE /projects/{projectId}/upload-tokens/{id}` (revoke): a project's upload tokens ([S-0002](stories/0002-upload-tokens.md)) |
 
 `account` is an example: it shows the whole path from the web app's client
-through the proxy to an `@Implement`ed controller, and the browser tests
-cover it through the dashboard page.
+through the proxy to an `@Implement`ed controller. The web app no longer
+calls it (the dashboard lists projects); its api spec covers it.
 
 `projects` is the first owned resource: the controller takes the
 organization from the session's `activeOrganizationId` (see
@@ -81,6 +81,11 @@ the project is the organization's (`ProjectsService.get`, exported by
 ("Project not found."), and then scopes the tokens to the project. Token
 generation and hashing live in the api (`src/upload-tokens/upload-token.ts`),
 not in the contracts.
+
+Body schemas a web form validates with carry their own messages
+(`projectNameSchema`: "Enter a name.", "Use at most 100 characters."),
+since the form shows them under its fields; zod's defaults are written for
+developers.
 
 Inputs use oRPC's default **compact** structure: path parameters, query, and
 body are merged into one input object (e.g. `PATCH /widgets/{id}` takes

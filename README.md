@@ -38,8 +38,8 @@ remote; when merging one, keep the new names in these places:
 - **Deployment:** nothing to edit; set the GitHub Actions variables and each
   OpenTofu root's `terraform.tfvars` (see
   [Deployment](docs/deployment.md#first-deploy-checklist)).
-- **The example route:** `GET /account` and `/dashboard` show the wiring;
-  keep or replace them.
+- **The example route:** `GET /account` shows the wiring; keep or replace
+  it. (`/dashboard` now lists vulnscan's projects.)
 
 ## Documentation
 

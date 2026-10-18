@@ -1,7 +1,7 @@
 import type { ORPCErrorJSON } from "@orpc/client";
 import type { InferContractRouterOutputs } from "@orpc/contract";
-import type { AccountDto, Contract } from "@repo/contracts";
-import { users } from "@repo/fixtures";
+import type { AccountDto, Contract, ProjectDto } from "@repo/contracts";
+import { projects, users } from "@repo/fixtures";
 import { HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
@@ -29,6 +29,21 @@ export function anAccount(fields: Partial<AccountDto> = {}): AccountDto {
     id: "00000000-0000-4000-8000-000000000001",
     name,
     email,
+    ...fields,
+  };
+}
+
+/**
+ * A project as the api returns it: the first fixture project, with `fields`
+ * on top.
+ */
+export function aProject(fields: Partial<ProjectDto> = {}): ProjectDto {
+  const [{ name }] = projects;
+  return {
+    id: "00000000-0000-4000-8000-000000000101",
+    name,
+    createdAt: new Date("2026-10-01T09:00:00Z"),
+    updatedAt: new Date("2026-10-01T09:00:00Z"),
     ...fields,
   };
 }

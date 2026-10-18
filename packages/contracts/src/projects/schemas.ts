@@ -1,7 +1,14 @@
 import { z } from "zod";
 
-/** A project's name: 1–100 characters once trimmed. */
-export const projectNameSchema = z.string().trim().min(1).max(100);
+/**
+ * A project's name: 1–100 characters once trimmed. The messages are shown
+ * under the web form's name field.
+ */
+export const projectNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Enter a name.")
+  .max(100, "Use at most 100 characters.");
 
 /** One app the user deploys, owned by their organization. */
 export const projectSchema = z.object({

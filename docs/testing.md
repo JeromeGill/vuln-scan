@@ -308,7 +308,8 @@ calls. `pnpm --filter web test` runs them, and so do `pnpm test` and
   browser. A request without a handler fails the test.
 - **Type the mock responses from the contracts.** `ApiOutputs["account"]["get"]`
   (from `test/server.ts`) is a route's response type; `anAccount(fields?)`
-  builds an `AccountDto` from the first fixture user with `fields` on top;
+  builds an `AccountDto` from the first fixture user with `fields` on top
+  (`aProject(fields?)` a `ProjectDto` from the first fixture project);
   `apiError({ code, status, message, … })` sends an oRPC error like the api
   does (e.g. a `CONFLICT`).
 - **Use the api's fixture cases** (`@repo/fixtures/api`, see
@@ -334,7 +335,7 @@ calls. `pnpm --filter web test` runs them, and so do `pnpm test` and
   `lib/orpc.ts` keeps a reference to `fetch` when it's imported, which
   happens before `beforeAll` runs.
 - Specs end in `.spec.tsx` (`.spec.ts` for plain functions) and are
-  grouped by feature (`test/auth/`, `test/dashboard/`).
+  grouped by feature (`test/auth/`, `test/dashboard/`, `test/projects/`).
 
 The pages are tested together, in a real browser, by the
 [browser tests](#browser-tests).
@@ -390,7 +391,7 @@ libraries.
   the shared state with `test.use({ storageState: { cookies: [], origins: [] } })`.
 - **Data per test, through the api.** `helpers/api.ts` creates data with
   `page.request`, which shares the page's cookies, so it belongs to the
-  signed-in user (so far only `signUp`; add a helper per resource as tests
+  signed-in user (so far `signUp` and `createProject`; add a helper per resource as tests
   need them). Values are unique and come from `@repo/fixtures`. Tests run
   in parallel and share the user, so find your own rows rather than
   counting everything on a page.
