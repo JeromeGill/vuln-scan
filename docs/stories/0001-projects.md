@@ -1,7 +1,7 @@
 ---
 id: S-0001
 title: Create and manage projects
-status: in-progress # proposed | in-progress | done | dropped
+status: done # proposed | in-progress | done | dropped
 ---
 
 ## Story
@@ -43,5 +43,27 @@ apps'.
 
 ## Implementation
 
-Filled in when the story is done: the main files and routes, and the commits
-(`git log --grep "Story: S-0001"`).
+- **Organizations:** Better Auth's organization plugin, with its models as
+  entities in the `auth` schema; every user gets a personal organization at
+  sign-up, which new sessions work in (`apps/api/src/auth/auth.ts`, see
+  [Authentication](../auth.md#organizations)).
+- **Api:** `GET`, `POST /projects` and `GET`, `PATCH`,
+  `DELETE /projects/{id}` (`packages/contracts/src/projects/`), implemented
+  in `apps/api/src/projects/` on the `Project` entity
+  (`packages/entities/src/project.entity.ts`: belongs to an organization,
+  name unique ignoring case). Another organization's project is
+  `NOT_FOUND`, a taken name a `CONFLICT`. Deleting a project deletes its
+  stored files (under its key prefix) first, then the project, whose
+  tokens, environments, releases and lockfiles go with it.
+- **Web:** the dashboard's projects table and create dialog
+  (`apps/web/containers/projects/projects-table.tsx`,
+  `create-project-dialog.tsx`, sharing `project-form.tsx`), and the project
+  page (`project-page.tsx`) with its rename dialog and its delete dialog,
+  which needs the name typed before it deletes and then returns to
+  `/dashboard` (`rename-project-dialog.tsx`, `delete-project-dialog.tsx`,
+  through `ConfirmDialog`).
+- **Tests:** `apps/api/test/projects/` with the cases in
+  `packages/fixtures/src/api/projects/`, `apps/web/test/projects/` and
+  `apps/web/test/dashboard/`, and the browser tests in
+  `apps/e2e/tests/projects.spec.ts` (AC1–AC5 and AC7; AC6 is api only).
+- **Commits:** `git log --grep "Story: S-0001"`.
