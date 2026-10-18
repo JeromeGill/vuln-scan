@@ -37,6 +37,13 @@ export class BaSession {
   @JoinColumn({ name: "user_id" })
   user?: Relation<BaUser>;
 
+  /**
+   * The organization the session works in (organization plugin): the
+   * user's personal organization, set when the session is created.
+   */
+  @Column({ name: "active_organization_id", type: "text", nullable: true })
+  activeOrganizationId: string | null;
+
   @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt: Date;
 

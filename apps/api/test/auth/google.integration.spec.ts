@@ -1,6 +1,6 @@
 import { INestApplication } from "@nestjs/common";
 import { env } from "@repo/config/api";
-import { BaAccount, BaUser } from "@repo/entities";
+import { BaAccount, BaMember, BaUser } from "@repo/entities";
 import { fixturePassword, users } from "@repo/fixtures";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -155,6 +155,25 @@ describe("Auth: sign in with Google (integration)", () => {
       await dataSource.getRepository(BaAccount).findBy({ userId: user.id }),
     ).toEqual([expect.objectContaining({ providerId: "google" })]);
     expect(publisher.verificationEmails(email)).toEqual([]);
+  });
+
+  it("the first time, also creates the user's personal organization and signs in to it", async () => {
+    const email = newEmail("google-organization");
+    googleSignsIn({ email, emailVerified: true });
+
+    const { agent } = await signInWithGoogle();
+
+    const user = await dataSource
+      .getRepository(BaUser)
+      .findOneByOrFail({ email });
+    const memberships = await dataSource
+      .getRepository(BaMember)
+      .findBy({ userId: user.id });
+    expect(memberships).toEqual([expect.objectContaining({ role: "owner" })]);
+    const response = await agent.get("/api/auth/get-session").expect(200);
+    expect(response.body.session).toMatchObject({
+      activeOrganizationId: memberships[0]?.organizationId,
+    });
   });
 
   it("signs in to the verified account with that email, which can still use its password", async () => {
