@@ -6,7 +6,10 @@ import { BaSession } from "./ba-session.entity.js";
 import { BaUser } from "./ba-user.entity.js";
 import { BaVerification } from "./ba-verification.entity.js";
 import { EmailDelivery } from "./email-delivery.entity.js";
+import { Environment } from "./environment.entity.js";
+import { Lockfile } from "./lockfile.entity.js";
 import { Project } from "./project.entity.js";
+import { Release } from "./release.entity.js";
 import { UploadToken } from "./upload-token.entity.js";
 
 /** Every entity, registered by `postgresOptions` (api and worker). */
@@ -21,4 +24,7 @@ export const entities = [
   EmailDelivery,
   Project,
   UploadToken,
+  Environment,
+  Release,
+  Lockfile,
 ];

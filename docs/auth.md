@@ -59,8 +59,14 @@ export class ExamplesController {
 }
 ```
 
-Public app routes today: none. Every oRPC route needs a session; only
-Better Auth's own endpoints under `/api/auth` are public.
+Every oRPC route needs a session except `POST /uploads`
+([S-0003](stories/0003-upload-lockfiles.md)), which CI calls with a
+project's upload token instead: it's `@AllowAnonymous()` to Better Auth
+and guarded by `UploadTokenGuard` (`apps/api/src/uploads/`), which hashes
+the `Authorization: Bearer vs_…` token, looks it up, and answers 401 (in
+oRPC's error shape) for a missing, unknown, revoked or expired one before
+the body is read. The handler gets the token with `@CurrentUploadToken()`.
+Better Auth's own endpoints under `/api/auth` are public too.
 
 ### Endpoints in use
 

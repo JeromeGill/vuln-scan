@@ -4,3 +4,4 @@ export * from "./projects/list.js";
 export * from "./projects/rename.js";
 export * from "./upload-tokens/create.js";
 export * from "./upload-tokens/list.js";
+export * from "./uploads/create.js";

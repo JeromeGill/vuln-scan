@@ -6,18 +6,23 @@ import {
   projectsPath,
   type ProjectDto,
 } from "@repo/contracts";
-import { UploadToken } from "@repo/entities";
-import { projects, uploadTokens } from "@repo/fixtures";
+import { Environment, Lockfile, Release, UploadToken } from "@repo/entities";
+import { deployments, lockfiles, projects, uploadTokens } from "@repo/fixtures";
+import { ObjectStorage } from "@repo/storage";
 import request from "supertest";
 import { App } from "supertest/types.js";
-import { DataSource } from "typeorm";
+import { DataSource, In } from "typeorm";
 import {
   createApp,
   deleteUsersAndClose,
   signUp,
   type TestUser,
 } from "../helpers/app.js";
-import { createProject, createUploadToken } from "../helpers/builders.js";
+import {
+  createProject,
+  createUploadToken,
+  uploadLockfile,
+} from "../helpers/builders.js";
 
 describe(`DELETE ${projectsPath}/{id}`, () => {
   let app: INestApplication<App>;
@@ -76,6 +81,62 @@ describe(`DELETE ${projectsPath}/{id}`, () => {
     await expect(
       app.get(DataSource).getRepository(UploadToken).existsBy({ id: token.id }),
     ).resolves.toBe(false);
+  });
+
+  it("S-0001 AC5: deletes the project's environments, releases and stored files", async () => {
+    const deleted = await createProject(app, owner, {
+      name: `${projects[3].name} uploads`,
+    });
+    const token = await createUploadToken(app, owner, deleted.id, {
+      name: uploadTokens[0].name,
+      expiresInDays: null,
+    });
+    for (const [index, lockfile] of lockfiles.entries()) {
+      await uploadLockfile(app, token.token, {
+        environment: deployments.environments[index % 2] ?? "production",
+        version: deployments.versions[index % 3] ?? "v1",
+        path: lockfile.path,
+        file: lockfile.content,
+      });
+    }
+    const dataSource = app.get(DataSource);
+    const environmentIds = (
+      await dataSource
+        .getRepository(Environment)
+        .findBy({ projectId: deleted.id })
+    ).map(({ id }) => id);
+    const releaseIds = (
+      await dataSource
+        .getRepository(Release)
+        .findBy({ environmentId: In(environmentIds) })
+    ).map(({ id }) => id);
+    const keys = (
+      await dataSource
+        .getRepository(Lockfile)
+        .findBy({ releaseId: In(releaseIds) })
+    ).map(({ storageKey }) => storageKey);
+    expect(keys).toHaveLength(lockfiles.length);
+
+    await api()
+      .delete(`${projectsPath}/${deleted.id}`)
+      .set("Cookie", owner.cookie)
+      .expect(204);
+
+    await expect(
+      dataSource.getRepository(Environment).existsBy({ projectId: deleted.id }),
+    ).resolves.toBe(false);
+    await expect(
+      dataSource.getRepository(Release).existsBy({ id: In(releaseIds) }),
+    ).resolves.toBe(false);
+    await expect(
+      dataSource
+        .getRepository(Lockfile)
+        .existsBy({ releaseId: In(releaseIds) }),
+    ).resolves.toBe(false);
+    const storage = app.get(ObjectStorage);
+    for (const key of keys) {
+      await expect(storage.headObject(key)).resolves.toBeNull();
+    }
   });
 
   it("S-0001 AC5: frees the name for a new project", async () => {

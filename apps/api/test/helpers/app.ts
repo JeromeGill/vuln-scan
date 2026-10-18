@@ -9,6 +9,7 @@ import {
 } from "@repo/events";
 import { Test } from "@nestjs/testing";
 import { fixturePassword, users } from "@repo/fixtures";
+import { ObjectStorage } from "@repo/storage";
 import request from "supertest";
 import { App } from "supertest/types.js";
 import { DataSource, In } from "typeorm";
@@ -51,15 +52,18 @@ export const publisher = new FakeJobPublisher();
 
 /**
  * Boots the full `AppModule`, as `main.ts` does, with `publisher` in place
- * of RabbitMQ.
+ * of RabbitMQ. With `storage: false` it runs as without `STORAGE_DRIVER`:
+ * no `ObjectStorage`.
  */
-export async function createApp(): Promise<INestApplication<App>> {
-  const moduleFixture = await Test.createTestingModule({
-    imports: [AppModule],
-  })
+export async function createApp({ storage = true } = {}): Promise<
+  INestApplication<App>
+> {
+  let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(JobPublisher)
-    .useValue(publisher)
-    .compile();
+    .useValue(publisher);
+  if (!storage)
+    builder = builder.overrideProvider(ObjectStorage).useValue(null);
+  const moduleFixture = await builder.compile();
   const app = moduleFixture.createNestApplication<INestApplication<App>>({
     bodyParser: false,
   });

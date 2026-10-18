@@ -7,7 +7,9 @@ request/response cases for the api's endpoints built from that data.
 - **`@repo/fixtures`** (`src/data/`): the sample data, so far the fixture
   users (`users.ts`) and their shared password, projects (`projects.ts`,
   each in its `owner`'s personal organization), and upload tokens
-  (`upload-tokens.ts`, each for a `project`, created by its owner). Add a file per kind of
+  (`upload-tokens.ts`, each for a `project`, created by its owner), and
+  sample lockfiles with the environments and versions CI deploys
+  (`lockfiles.ts`). Add a file per kind of
   record, referring to other fixtures by natural keys (e.g. a user's
   `email`) and typed with `as const`.
 - **`@repo/fixtures/api`** (`src/api/`): one file per endpoint that takes a
@@ -15,8 +17,9 @@ request/response cases for the api's endpoints built from that data.
   (`widgets/create.ts` for `widgetsContract.create`), exporting a function
   that returns `ApiCase`s (`src/api/case.ts`): a label, a request, and the
   expected response without generated fields, typed with the contract's
-  request and response types. So far `projects/` (create, list, rename) and `upload-tokens/`
-  (create, list).
+  request and response types. So far `projects/` (create, list, rename),
+  `upload-tokens/` (create, list), and `uploads/` (create; its multipart
+  request holds the file's contents as a string, which the spec attaches).
   See [Testing](../../docs/testing.md#one-spec-per-endpoint).
 
 - **Used by:** the api's seeder; the api integration tests and the browser

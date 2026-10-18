@@ -11,6 +11,7 @@ import { MessagingModule } from "./messaging/messaging.module.js";
 import { orpcConfig } from "./orpc.js";
 import { ProjectsModule } from "./projects/projects.module.js";
 import { UploadTokensModule } from "./upload-tokens/upload-tokens.module.js";
+import { UploadsModule } from "./uploads/uploads.module.js";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UploadTokensModule } from "./upload-tokens/upload-tokens.module.js";
     AccountModule,
     ProjectsModule,
     UploadTokensModule,
+    UploadsModule,
   ],
 })
 export class AppModule {}

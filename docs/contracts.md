@@ -21,9 +21,12 @@ packages/contracts/src/
 │   ├── schemas.ts
 │   ├── params.ts      GET query parameters (and `projectIdParams`)
 │   └── contracts.ts
-└── upload-tokens/     nested under a project: /projects/{projectId}/upload-tokens
+├── upload-tokens/     nested under a project: /projects/{projectId}/upload-tokens
+│   ├── schemas.ts
+│   ├── params.ts
+│   └── contracts.ts
+└── uploads/           POST /uploads, multipart, with an upload token
     ├── schemas.ts
-    ├── params.ts
     └── contracts.ts
 ```
 
@@ -61,6 +64,7 @@ import them.
 | account       | `GET /account`: the signed-in user's id, name, and email                                                                                                                                                                                                                                                                       |
 | projects      | `GET /projects` (paginated, newest first), `POST /projects`, `GET /projects/{id}`, `PATCH /projects/{id}` (rename), `DELETE /projects/{id}`: the active organization's projects ([S-0001](stories/0001-projects.md))                                                                                                           |
 | upload-tokens | `GET /projects/{projectId}/upload-tokens` (paginated, newest first; revoked tokens left out), `POST /projects/{projectId}/upload-tokens` (the response is the only one with the full `token`), `DELETE /projects/{projectId}/upload-tokens/{id}` (revoke): a project's upload tokens ([S-0002](stories/0002-upload-tokens.md)) |
+| uploads       | `POST /uploads` (multipart: `environment`, `version`, `path`, `file`; `Authorization: Bearer <upload token>`, no session): stores a lockfile in the token's project, creating its environment and release ([S-0003](stories/0003-upload-lockfiles.md))                                                                         |
 
 `account` is an example: it shows the whole path from the web app's client
 through the proxy to an `@Implement`ed controller. The web app no longer
@@ -81,6 +85,17 @@ the project is the organization's (`ProjectsService.get`, exported by
 ("Project not found."), and then scopes the tokens to the project. Token
 generation and hashing live in the api (`src/upload-tokens/upload-token.ts`),
 not in the contracts.
+
+`uploads` is the first route without a session and the first multipart
+one. Its input is a zod object with `z.file()` next to plain string fields,
+which oRPC parses from the `multipart/form-data` body. A Nest guard of its
+own (`UploadTokenGuard`, see [Authentication](auth.md#route-protection))
+checks the token, and refuses a `Content-Length` far over the limit,
+before oRPC reads the body; the service answers `PAYLOAD_TOO_LARGE` (413)
+for a file over 20 MB and `SERVICE_UNAVAILABLE` (503) without storage,
+both declared on the route with `.errors()`. The validation messages (the
+environment name rule, the supported file names) are for the CI log, in
+the `BAD_REQUEST`'s `data.issues`.
 
 Body schemas a web form validates with carry their own messages
 (`projectNameSchema`: "Enter a name.", "Use at most 100 characters."),
