@@ -1,7 +1,8 @@
 # Object storage
 
 `@repo/storage` (`packages/storage/`) stores files (uploads, scan
-artifacts, …) behind one provider-neutral interface. The production provider isn't chosen yet; so far there is one
+artifacts, …) behind one provider-neutral interface; so far the api
+stores the lockfiles CI uploads. The production provider isn't chosen yet; so far there is one
 driver, `gcs`, which runs against the `fake-gcs-server` emulator locally.
 
 ## The interface
@@ -25,8 +26,9 @@ as plain strings, as in GCS and S3, so end one with `/` to mean a folder.
 
 ## In the api
 
-The api is wired for storage, but no feature uses it yet; the worker
-doesn't either.
+The api stores uploaded lockfiles ([S-0003](stories/0003-upload-lockfiles.md),
+`src/uploads/`) and deletes a project's files with it (`src/projects/`);
+the worker doesn't use storage yet.
 
 - **Config** (`@repo/config/api`, see [Configuration](configuration.md)):
   `STORAGE_DRIVER` (`gcs`, the only driver so far), `GCS_BUCKET`,
@@ -42,14 +44,36 @@ doesn't either.
   `STORAGE_DRIVER` set, a missing `GCS_BUCKET` stops startup, and the
   driver is built at startup, so locally the `fake-gcs` container must be
   running (`script/server` starts it).
-- **Keys:** put each record's files under one prefix (e.g.
-  `widgets/{widgetId}/{fileId}/original`), so deleting the record can delete
-  its objects with `deletePrefix`. Deleting a user goes through Better
-  Auth, so a feature storing per-user files needs its own cleanup.
-- **Uploads** go straight from the browser to the bucket: the api signs a
+- **Keys:** put each record's files under one prefix (see
+  [Key layout](#key-layout)), so deleting the record can delete its objects
+  with `deletePrefix`. Deleting a user goes through Better Auth, so a
+  feature storing per-user files needs its own cleanup.
+- **Uploads from CI** (`POST /uploads`, lockfiles of at most 20 MB) come
+  through the api, multipart, and it writes them with `putObject` (why not
+  a signed URL: [P-0001](plans/0001-vulnerability-monitoring.md#getting-the-file-in)).
+  Without storage the route answers 503.
+- **Browser uploads** (none yet) go straight to the bucket: the api signs a
   `PUT` URL for the content type with a size range, and on completion
   heads the object and checks its type and size itself, since the emulator
   enforces neither. Downloads are signed `GET` URLs.
+
+## Key layout
+
+Everything the api stores for a project is under the project's prefix, so
+deleting the project (`ProjectsService.delete`) removes it all with one
+`deletePrefix` before the rows are deleted. The keys are built in
+`apps/api/src/storage/keys.ts`:
+
+| Key                                                                                             | Holds                                                                                                                         |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `projects/<projectId>/`                                                                         | the project's prefix: every file below                                                                                        |
+| `projects/<projectId>/environments/<environmentId>/releases/<releaseId>/lockfiles/<lockfileId>` | an uploaded lockfile (`text/plain`), its `lockfile` row's `storage_key`; uploading the same path to the release overwrites it |
+
+Keys use ids, never the uploaded path, which may hold characters keys don't
+allow; the path is in the `lockfile` row. A lockfile is written inside the
+database transaction that creates its rows, before it commits, so a failed
+write leaves no rows; a failed commit can leave an object no row points to,
+under the project's prefix, which goes when the project does.
 
 ## Locally: the emulator
 

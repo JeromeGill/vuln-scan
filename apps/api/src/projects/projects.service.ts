@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ORPCError } from "@orpc/nest";
 import type {
@@ -8,8 +8,10 @@ import type {
   RenameProject,
 } from "@repo/contracts";
 import { Project } from "@repo/entities";
+import { ObjectStorage } from "@repo/storage";
 import { type FindOptionsWhere, Repository } from "typeorm";
 import { isUniqueViolation } from "../database-errors.js";
+import { projectStoragePrefix } from "../storage/keys.js";
 
 /**
  * The projects of one organization. Every method takes the organization's
@@ -19,6 +21,11 @@ import { isUniqueViolation } from "../database-errors.js";
 export class ProjectsService {
   constructor(
     @InjectRepository(Project) private readonly projects: Repository<Project>,
+    // Missing (or `null`) without STORAGE_DRIVER.
+    // An explicit token: the union type hides the class from Nest.
+    @Optional()
+    @Inject(ObjectStorage)
+    private readonly storage?: ObjectStorage | null,
   ) {}
 
   /** A page of the organization's projects, newest first. */
@@ -71,7 +78,14 @@ export class ProjectsService {
     }
   }
 
+  /**
+   * Deletes the project with everything in it: its rows cascade, and its
+   * stored files (lockfiles) are deleted first, so a failure there leaves
+   * the project to delete again rather than files nothing points to.
+   */
   async delete(organizationId: string, id: string): Promise<void> {
+    await this.get(organizationId, id);
+    await this.storage?.deletePrefix(projectStoragePrefix(id));
     const { affected } = await this.projects.delete({ id, organizationId });
     if (!affected)
       throw new ORPCError("NOT_FOUND", { message: "Project not found." });

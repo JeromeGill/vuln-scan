@@ -112,12 +112,15 @@ demand) against real services:
 against the `fake-gcs` emulator (`script/test` starts it), in its own
 `vulnscan-storage-test` bucket and under a unique key prefix per run.
 
-The api has no storage tests yet: no feature imports `StorageModule`. Its
-`.env.test` already points `GCS_BUCKET` at a `vulnscan-test` bucket in the
-emulator (`.env` must point `STORAGE_DRIVER` and `GCS_API_ENDPOINT` at it,
-as `.env.example` does). A media feature's specs would upload like the
-browser: request an upload, PUT bytes to the signed URL, and complete it;
-the emulator doesn't check signatures.
+The api's specs store files in the emulator too: `.env.test` points
+`GCS_BUCKET` at a `vulnscan-test` bucket (`.env` must point
+`STORAGE_DRIVER` and `GCS_API_ENDPOINT` at it, as `.env.example` does).
+`test/uploads/create-upload.integration.spec.ts` reads the stored lockfile
+back with `app.get(ObjectStorage)`, and `createApp({ storage: false })`
+boots the api without `ObjectStorage`, as without `STORAGE_DRIVER`, for
+the 503. A browser-upload feature's specs would upload like the browser:
+request an upload, PUT bytes to the signed URL, and complete it; the
+emulator doesn't check signatures.
 
 ## Writing integration tests
 
@@ -144,7 +147,8 @@ For api routes, use the helpers in `test/helpers/`. `app.ts`:
   those don't cascade from the user.
 
 `test/helpers/builders.ts` creates the rows a spec needs through the api
-(so far `createProject` and `createUploadToken`; see
+(so far `createProject`, `createUploadToken`, and `uploadLockfile`, with
+`postUpload` beneath it for specs that send invalid uploads; see
 [Testing a new endpoint](#testing-a-new-endpoint)).
 
 The integration tests run with dummy Google credentials

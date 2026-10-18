@@ -1,7 +1,7 @@
 ---
 id: S-0003
 title: Upload lockfiles from CI
-status: proposed # proposed | in-progress | done | dropped
+status: in-progress # proposed | in-progress | done | dropped
 ---
 
 ## Story

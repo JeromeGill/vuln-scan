@@ -8,7 +8,7 @@ import {
   type ProjectDto,
 } from "@repo/contracts";
 import { UploadToken } from "@repo/entities";
-import { projects, users } from "@repo/fixtures";
+import { deployments, lockfiles, projects, users } from "@repo/fixtures";
 import { listedUploadTokens, listUploadTokensCases } from "@repo/fixtures/api";
 import request from "supertest";
 import { App } from "supertest/types.js";
@@ -19,7 +19,11 @@ import {
   signUp,
   type TestUser,
 } from "../helpers/app.js";
-import { createProject, createUploadToken } from "../helpers/builders.js";
+import {
+  createProject,
+  createUploadToken,
+  uploadLockfile,
+} from "../helpers/builders.js";
 
 describe(`GET ${uploadTokensPath}`, () => {
   let app: INestApplication<App>;
@@ -104,6 +108,25 @@ describe(`GET ${uploadTokensPath}`, () => {
     const { token: _token, ...listed } = expired;
     const { items } = await list(sibling.id);
     expect(items).toContainEqual({ ...listed, expiresAt });
+  });
+
+  it("S-0003 AC9: shows when a token was last used to upload", async () => {
+    const used = await createUploadToken(app, owner, sibling.id, {
+      name: "Used",
+      expiresInDays: null,
+    });
+    const before = Date.now();
+    await uploadLockfile(app, used.token, {
+      environment: deployments.environments[0],
+      version: deployments.versions[0],
+      path: lockfiles[0].path,
+      file: lockfiles[0].content,
+    });
+
+    const { items } = await list(sibling.id);
+    const lastUsedAt = items.find(({ id }) => id === used.id)?.lastUsedAt;
+    expect(lastUsedAt?.getTime()).toBeGreaterThanOrEqual(before - 1000);
+    expect(lastUsedAt?.getTime()).toBeLessThanOrEqual(Date.now());
   });
 
   it("S-0002 AC1: lists only the project's own tokens", async () => {

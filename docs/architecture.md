@@ -80,8 +80,9 @@ apps/web (Next.js)
 - Files go to object storage through `@repo/storage`'s provider-neutral
   `ObjectStorage` (a `gcs` driver, run against the `fake-gcs` emulator
   locally). The api's `StorageModule` provides it when `STORAGE_DRIVER` is
-  set; no feature imports it yet. Browsers upload and download with URLs
-  the api signs. See [Storage](storage.md).
+  set; the uploads route stores lockfiles with it, under the project's
+  key prefix. Browsers would upload and download with URLs the api signs.
+  See [Storage](storage.md).
 
 ## Workspaces
 
