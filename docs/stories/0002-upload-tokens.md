@@ -1,7 +1,7 @@
 ---
 id: S-0002
 title: Issue upload tokens for a project
-status: proposed # proposed | in-progress | done | dropped
+status: in-progress # proposed | in-progress | done | dropped
 ---
 
 ## Story

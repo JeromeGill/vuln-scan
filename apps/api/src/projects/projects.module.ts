@@ -8,5 +8,7 @@ import { ProjectsService } from "./projects.service.js";
   imports: [TypeOrmModule.forFeature([Project])],
   controllers: [ProjectsController],
   providers: [ProjectsService],
+  // For the resources under a project, to check it's the organization's.
+  exports: [ProjectsService],
 })
 export class ProjectsModule {}

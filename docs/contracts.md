@@ -17,9 +17,13 @@ packages/contracts/src/
 ├── account/
 │   ├── schemas.ts     response shapes and POST/PATCH bodies
 │   └── contracts.ts   the routes
-└── projects/
+├── projects/
+│   ├── schemas.ts
+│   ├── params.ts      GET query parameters (and `projectIdParams`)
+│   └── contracts.ts
+└── upload-tokens/     nested under a project: /projects/{projectId}/upload-tokens
     ├── schemas.ts
-    ├── params.ts      GET query parameters
+    ├── params.ts
     └── contracts.ts
 ```
 
@@ -52,10 +56,11 @@ import them.
 
 ## Routes
 
-| Resource | Routes                                                                                                                                                                                                               |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| account  | `GET /account`: the signed-in user's id, name, and email                                                                                                                                                             |
-| projects | `GET /projects` (paginated, newest first), `POST /projects`, `GET /projects/{id}`, `PATCH /projects/{id}` (rename), `DELETE /projects/{id}`: the active organization's projects ([S-0001](stories/0001-projects.md)) |
+| Resource      | Routes                                                                                                                                                                                                                                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| account       | `GET /account`: the signed-in user's id, name, and email                                                                                                                                                                                                                                                                       |
+| projects      | `GET /projects` (paginated, newest first), `POST /projects`, `GET /projects/{id}`, `PATCH /projects/{id}` (rename), `DELETE /projects/{id}`: the active organization's projects ([S-0001](stories/0001-projects.md))                                                                                                           |
+| upload-tokens | `GET /projects/{projectId}/upload-tokens` (paginated, newest first; revoked tokens left out), `POST /projects/{projectId}/upload-tokens` (the response is the only one with the full `token`), `DELETE /projects/{projectId}/upload-tokens/{id}` (revoke): a project's upload tokens ([S-0002](stories/0002-upload-tokens.md)) |
 
 `account` is an example: it shows the whole path from the web app's client
 through the proxy to an `@Implement`ed controller, and the browser tests
@@ -68,6 +73,14 @@ to it, so another organization's project is `NOT_FOUND`. A name the
 organization already uses, ignoring case and surrounding spaces, is a
 `CONFLICT` (the database's unique constraint, mapped by
 `isUniqueViolation` in `apps/api/src/database-errors.ts`).
+
+`upload-tokens` is the first resource under a project: its routes take a
+`projectId` path parameter (`projectIdParams`), the service first checks
+the project is the organization's (`ProjectsService.get`, exported by
+`ProjectsModule`), so another organization's project is `NOT_FOUND`
+("Project not found."), and then scopes the tokens to the project. Token
+generation and hashing live in the api (`src/upload-tokens/upload-token.ts`),
+not in the contracts.
 
 Inputs use oRPC's default **compact** structure: path parameters, query, and
 body are merged into one input object (e.g. `PATCH /widgets/{id}` takes

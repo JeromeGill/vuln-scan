@@ -6,16 +6,18 @@ import {
   projectsPath,
   type ProjectDto,
 } from "@repo/contracts";
-import { projects } from "@repo/fixtures";
+import { UploadToken } from "@repo/entities";
+import { projects, uploadTokens } from "@repo/fixtures";
 import request from "supertest";
 import { App } from "supertest/types.js";
+import { DataSource } from "typeorm";
 import {
   createApp,
   deleteUsersAndClose,
   signUp,
   type TestUser,
 } from "../helpers/app.js";
-import { createProject } from "../helpers/builders.js";
+import { createProject, createUploadToken } from "../helpers/builders.js";
 
 describe(`DELETE ${projectsPath}/{id}`, () => {
   let app: INestApplication<App>;
@@ -57,6 +59,23 @@ describe(`DELETE ${projectsPath}/{id}`, () => {
         .parse(list.body)
         .items.map(({ id }) => id),
     ).not.toContain(deleted.id);
+  });
+
+  it("S-0001 AC5: deletes the project's upload tokens", async () => {
+    const deleted = await createProject(app, owner, { name: projects[3].name });
+    const token = await createUploadToken(app, owner, deleted.id, {
+      name: uploadTokens[0].name,
+      expiresInDays: null,
+    });
+
+    await api()
+      .delete(`${projectsPath}/${deleted.id}`)
+      .set("Cookie", owner.cookie)
+      .expect(204);
+
+    await expect(
+      app.get(DataSource).getRepository(UploadToken).existsBy({ id: token.id }),
+    ).resolves.toBe(false);
   });
 
   it("S-0001 AC5: frees the name for a new project", async () => {

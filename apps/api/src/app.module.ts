@@ -10,6 +10,7 @@ import { JobPublisher } from "./messaging/job-publisher.js";
 import { MessagingModule } from "./messaging/messaging.module.js";
 import { orpcConfig } from "./orpc.js";
 import { ProjectsModule } from "./projects/projects.module.js";
+import { UploadTokensModule } from "./upload-tokens/upload-tokens.module.js";
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ProjectsModule } from "./projects/projects.module.js";
     ORPCModule.forRoot(orpcConfig),
     AccountModule,
     ProjectsModule,
+    UploadTokensModule,
   ],
 })
 export class AppModule {}
