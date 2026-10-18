@@ -33,8 +33,8 @@ doesn't either.
   `GCS_API_ENDPOINT` (`http://localhost:4443` locally, the emulator),
   `GCS_PROJECT_ID`, and `GCS_CREDENTIALS` (a service account key's JSON;
   Application Default Credentials when unset). `.env.example` points at the
-  emulator; the integration tests use their own bucket (`app-test`,
-  `.env.test`) and the browser tests theirs (`app-e2e-test`).
+  emulator; the integration tests use their own bucket (`vulnscan-test`,
+  `.env.test`) and the browser tests theirs (`vulnscan-e2e-test`).
 - **Storage is optional.** `StorageModule` (`apps/api/src/storage/`)
   provides `ObjectStorage` only when `STORAGE_DRIVER` is set, so the api
   starts without a bucket. A feature imports `StorageModule` and injects

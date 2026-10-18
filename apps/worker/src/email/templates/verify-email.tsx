@@ -3,7 +3,7 @@ import { Section, Text } from "react-email";
 import type { Email } from "../../mail/mailer.service.js";
 import { EmailButton, EmailLayout, renderEmail, styles } from "./layout.js";
 
-const subject = "Verify your email for My App";
+const subject = "Verify your email for vulnscan";
 
 /**
  * The link that verifies the user's email address.
@@ -12,7 +12,7 @@ export function VerifyEmail({ name, url }: VerifyEmailData) {
   return (
     <EmailLayout
       preview="Verify your email address to finish signing up."
-      footer="You got this email because someone signed up for My App with this address. If it wasn't you, ignore it."
+      footer="You got this email because someone signed up for vulnscan with this address. If it wasn't you, ignore it."
     >
       <Text style={styles.text}>{name ? `Hi ${name},` : "Hello,"}</Text>
       <Text style={styles.text}>

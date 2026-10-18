@@ -47,7 +47,7 @@ One command starts everything:
   api and worker.
 
 Emails land in Mailpit at http://localhost:8025; RabbitMQ's management UI is
-at http://localhost:15672 (`app` / `app`). See [Messaging](messaging.md).
+at http://localhost:15672 (`vulnscan` / `vulnscan`). See [Messaging](messaging.md).
 
 Ctrl-C stops all of it, including the containers (data is kept in the
 `postgres-data` and `rabbitmq-data` volumes; Mailpit keeps nothing).

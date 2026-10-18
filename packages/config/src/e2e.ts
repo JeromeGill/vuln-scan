@@ -14,7 +14,7 @@ export const env = createEnv({
     ...databaseVars,
 
     /** The broker; the tests use their own vhost on it. */
-    RABBITMQ_URL: z.url().default("amqp://app:app@localhost:5672"),
+    RABBITMQ_URL: z.url().default("amqp://vulnscan:vulnscan@localhost:5672"),
     /**
      * `dev` runs the web app with `next dev`, which reports React's
      * hydration and rendering warnings; `prod` runs `next build` and

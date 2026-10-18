@@ -11,7 +11,7 @@ made with it:
 
 - **Its own ports, database, and vhost, never reusing a server.** The
   suite starts the api on 3102 and web on 3100 with
-  `reuseExistingServer: false`, against `app_e2e_test` (recreated on
+  `reuseExistingServer: false`, against `vulnscan_e2e_test` (recreated on
   every run), so it can run while `script/server` is up and never tests or
   writes to someone else's server. `next dev` locks its build directory,
   so the web app takes `NEXT_DIST_DIR` and the suite uses `.next-e2e`.

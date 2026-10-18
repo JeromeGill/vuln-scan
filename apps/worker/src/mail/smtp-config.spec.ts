@@ -40,9 +40,9 @@ describe("worker config", () => {
       {
         cwd: tmpdir(),
         env: {
-          DB_USER: "app",
-          DB_PASSWORD: "app",
-          DB_NAME: "app",
+          DB_USER: "vulnscan",
+          DB_PASSWORD: "vulnscan",
+          DB_NAME: "vulnscan",
           ...vars,
         },
       },
@@ -51,7 +51,7 @@ describe("worker config", () => {
 
   const valid = {
     SMTP_URL: "smtps://resend:re_key@smtp.resend.com:2465",
-    MAIL_FROM: "My App <no-reply@mail.example.com>",
+    MAIL_FROM: "vulnscan <no-reply@mail.example.com>",
   };
 
   it("accepts a provider's SMTP URL and a named From address", async () => {
@@ -70,7 +70,11 @@ describe("worker config", () => {
       "SMTP_URL",
     ],
     ["MAIL_FROM is missing", { SMTP_URL: valid.SMTP_URL }, "MAIL_FROM"],
-    ["MAIL_FROM has no address", { ...valid, MAIL_FROM: "app" }, "MAIL_FROM"],
+    [
+      "MAIL_FROM has no address",
+      { ...valid, MAIL_FROM: "vulnscan" },
+      "MAIL_FROM",
+    ],
   ])("refuses to start when %s", async (_case, vars, variable) => {
     await expect(loadConfig(vars)).rejects.toThrow(variable);
   });

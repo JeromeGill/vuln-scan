@@ -6,7 +6,7 @@
  */
 
 /** Producers publish every job here, with the message `type` as routing key. */
-export const jobsExchange = { name: "app.jobs", type: "topic" } as const;
+export const jobsExchange = { name: "vulnscan.jobs", type: "topic" } as const;
 
 export interface JobQueue {
   /** Work queue name; also the prefix of its retry and parking queues. */

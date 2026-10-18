@@ -1,4 +1,4 @@
-# nest-template
+# vulnscan
 
 pnpm + Turborepo monorepo: a [Next.js](https://nextjs.org/) web app, a
 [NestJS](https://nestjs.com/) api with [Better Auth](https://www.better-auth.com/)
@@ -18,19 +18,23 @@ script/seed        # load the sample users
 script/test        # run the test suites (-a=api, -a=web, -a=worker, or -a=e2e for one app)
 ```
 
-## Starting a project from this template
+## Started from a template
 
-The template uses placeholder names; replace them in the new repo:
+This repo was started from a template, whose placeholder names have been
+renamed to `vulnscan`. Template updates are pulled from the `template` git
+remote; when merging one, keep the new names in these places:
 
-- **Display name:** `My App` in `apps/web/lib/brand.ts` (also the
-  description and colours), the verification email
+- **Display name:** `vulnscan` (was `My App`) in `apps/web/lib/brand.ts`
+  (also the description and colours), the verification email
   (`apps/worker/src/email/templates/verify-email.tsx`) and the tests that
   check its subject, and `MAIL_FROM` in `.env.example`.
-- **Identifiers:** `app` in the database and RabbitMQ names (`.env.example`,
-  `.env.test.example`, `docker-compose.yml`, `packages/config/src/*.ts`,
-  `apps/e2e/settings.ts`), the jobs exchange (`app.jobs`,
-  `packages/events/src/topology.ts`), and the service worker's cache prefix
-  (`apps/web/public/sw.js`); `nest-template` in the root `package.json`.
+- **Identifiers:** `vulnscan` (was `app`) in the database, RabbitMQ, and
+  bucket names (`.env.example`, `.env.test.example`, `docker-compose.yml`,
+  `packages/config/src/*.ts`, `apps/e2e/settings.ts`,
+  `packages/storage/test/gcs.integration.spec.ts`), the jobs exchange
+  (`vulnscan.jobs`, `packages/events/src/topology.ts`), and the service
+  worker's cache prefix (`apps/web/public/sw.js`); `vulnscan` (was
+  `nest-template`) in the root `package.json`.
 - **Deployment:** nothing to edit; set the GitHub Actions variables and each
   OpenTofu root's `terraform.tfvars` (see
   [Deployment](docs/deployment.md#first-deploy-checklist)).

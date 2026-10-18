@@ -23,7 +23,7 @@ describe("gcs driver (fake-gcs-server)", () => {
   beforeAll(async () => {
     storage = await createObjectStorage({
       driver: "gcs",
-      bucket: "app-storage-test",
+      bucket: "vulnscan-storage-test",
       apiEndpoint: EMULATOR_URL,
     });
   });

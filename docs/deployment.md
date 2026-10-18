@@ -174,7 +174,7 @@ worker.
 | Variable (worker) | Value                                                                 |
 | ----------------- | --------------------------------------------------------------------- |
 | `SMTP_URL`        | `smtps://resend:<api key>@smtp.resend.com:2465`, set in the dashboard |
-| `MAIL_FROM`       | e.g. `My App <no-reply@<verified domain>>`, set in the dashboard      |
+| `MAIL_FROM`       | e.g. `vulnscan <no-reply@<verified domain>>`, set in the dashboard    |
 | `WEB_URL`         | the web origin, for the links in emails                               |
 
 - **`smtps://` on port 2465** is TLS from the start. Railway blocks the
@@ -200,7 +200,7 @@ key from a prompt keeps it out of the shell history):
 read -rs RESEND_KEY   # paste the API key, then Enter
 printf 'smtps://resend:%s@smtp.resend.com:2465' "$RESEND_KEY" \
   | npx @railway/cli variable set SMTP_URL --stdin --service worker --skip-deploys
-npx @railway/cli variable set 'MAIL_FROM=My App <no-reply@<verified domain>>' --service worker
+npx @railway/cli variable set 'MAIL_FROM=vulnscan <no-reply@<verified domain>>' --service worker
 ```
 
 The second command (without `--skip-deploys`) redeploys the worker with

@@ -13,6 +13,6 @@ docker compose up --detach --wait
 trap 'echo "==> Stopping containers..."; docker compose stop' EXIT
 
 echo "==> Starting api (http://localhost:3002), web (http://localhost:3000), and worker..."
-echo "    Mailpit: http://localhost:8025  RabbitMQ: http://localhost:15672 (app / app)"
+echo "    Mailpit: http://localhost:8025  RabbitMQ: http://localhost:15672 (vulnscan / vulnscan)"
 # `app...` also runs the dev (watch) tasks of the app's workspace dependencies.
 pnpm exec turbo run dev --filter='api...' --filter='web...' --filter='worker...'

@@ -7,8 +7,8 @@ import { env } from "@repo/config/e2e";
  */
 export const WEB_URL = "http://localhost:3100";
 export const API_URL = "http://localhost:3102";
-export const DB_NAME = "app_e2e_test";
-export const VHOST = "app_e2e_test";
+export const DB_NAME = "vulnscan_e2e_test";
+export const VHOST = "vulnscan_e2e_test";
 
 const rabbitmqUrl = new URL(env.RABBITMQ_URL);
 rabbitmqUrl.pathname = `/${VHOST}`;
@@ -30,7 +30,7 @@ export const serverEnv = {
   // The storage emulator (docker compose's fake-gcs), in a bucket of its own.
   STORAGE_DRIVER: "gcs",
   GCS_API_ENDPOINT: "http://localhost:4443",
-  GCS_BUCKET: "app-e2e-test",
+  GCS_BUCKET: "vulnscan-e2e-test",
   // Its own build directory, so `next dev` can run next to script/server's.
   NEXT_DIST_DIR: ".next-e2e",
 };

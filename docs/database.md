@@ -12,8 +12,8 @@ and the worker.
 - Data lives in the `postgres-data` volume. `docker compose down -v` deletes
   it.
 - Two databases on that server:
-  - `app`: development, used by `script/server`
-  - `app_test`: integration tests, created by `apps/api/test/global-setup.ts`
+  - `vulnscan`: development, used by `script/server`
+  - `vulnscan_test`: integration tests, created by `apps/api/test/global-setup.ts`
     (or the worker's, whichever runs first)
 - Connect: `docker compose exec postgres psql -U app -d app`.
 

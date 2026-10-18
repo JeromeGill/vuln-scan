@@ -4,8 +4,8 @@
  * hex equivalents of the neutral tokens in `app/globals.css`.
  */
 export const brand = {
-  name: "My App",
-  description: "A Next.js and NestJS starter.",
+  name: "vulnscan",
+  description: "Vulnerability monitoring for the lockfiles you deploy.",
   colors: {
     /** `--background` in light mode (oklch(1 0 0)). */
     light: "#ffffff",

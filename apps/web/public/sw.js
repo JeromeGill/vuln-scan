@@ -14,7 +14,7 @@
 //   launch), caches its build's offline page, and drops the old one.
 
 const VERSION = new URL(self.location.href).searchParams.get("v");
-const CACHE_PREFIX = "app-";
+const CACHE_PREFIX = "vulnscan-";
 const STATIC_CACHE = `${CACHE_PREFIX}static`;
 const PAGES_CACHE = `${CACHE_PREFIX}offline-${VERSION}`;
 const OFFLINE_URL = "/offline";

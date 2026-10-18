@@ -68,9 +68,9 @@ never runs them. These suites used to be called "e2e" (`*.e2e-spec.ts`,
 - They boot the real `AppModule` with `@nestjs/testing` and call it over HTTP
   with Supertest.
 - Vitest sets `NODE_ENV=test`, so `@repo/config` loads `.env.test` on top of
-  `.env`: same settings, but `DB_NAME=app_test`.
+  `.env`: same settings, but `DB_NAME=vulnscan_test`.
 - `test/global-setup.ts` runs once before the suites. It creates the
-  `app_test` database on the docker-compose Postgres server if it doesn't
+  `vulnscan_test` database on the docker-compose Postgres server if it doesn't
   exist, and **refuses to run if `DB_NAME` doesn't end in `_test`**, so tests
   can never touch the dev database.
 - Tables are created by the api's schema sync when `AppModule` starts.
@@ -88,7 +88,7 @@ demand) against real services:
   syncs the schema itself (`synchronizeSchema` from `@repo/entities`, under
   the same advisory lock the api uses).
 - **RabbitMQ:** a separate vhost, from `RABBITMQ_URL` in `.env.test`
-  (`/app_test`), so a worker running from `script/server` never consumes
+  (`/vulnscan_test`), so a worker running from `script/server` never consumes
   test messages. The global setup creates it through the management API
   (port 15672) and **refuses a vhost whose name doesn't end in `_test`**.
 - **Short retries:** `JOB_RETRY_DELAYS_MS=100,200,300` in `.env.test`.
@@ -108,10 +108,10 @@ demand) against real services:
 
 `packages/storage/test/gcs.integration.spec.ts` runs the `gcs` driver
 against the `fake-gcs` emulator (`script/test` starts it), in its own
-`app-storage-test` bucket and under a unique key prefix per run.
+`vulnscan-storage-test` bucket and under a unique key prefix per run.
 
 The api has no storage tests yet: no feature imports `StorageModule`. Its
-`.env.test` already points `GCS_BUCKET` at a `app-test` bucket in the
+`.env.test` already points `GCS_BUCKET` at a `vulnscan-test` bucket in the
 emulator (`.env` must point `STORAGE_DRIVER` and `GCS_API_ENDPOINT` at it,
 as `.env.example` does). A media feature's specs would upload like the
 browser: request an upload, PUT bytes to the signed URL, and complete it;
@@ -361,7 +361,7 @@ libraries.
   taken. The web app gets its own build directory (`NEXT_DIST_DIR=.next-e2e`)
   so its `next dev` can run next to `script/server`'s.
 - **Its own data.** `prepare.ts` runs before the api starts and recreates
-  the `app_e2e_test` database and RabbitMQ vhost, refusing names that
+  the `vulnscan_e2e_test` database and RabbitMQ vhost, refusing names that
   don't end in `_test`; the api creates the tables when it starts.
   (Playwright's `globalSetup` only runs once the web servers are up, too
   late for this.)
@@ -387,7 +387,7 @@ libraries.
   in parallel and share the user, so find your own rows rather than
   counting everything on a page.
 - **Storage:** the api is configured with the `fake-gcs` emulator, in its
-  own `app-e2e-test` bucket (`settings.ts`); browsers upload to it on
+  own `vulnscan-e2e-test` bucket (`settings.ts`); browsers upload to it on
   `localhost:4443` directly.
 - **Email** is read from Mailpit's API by the unique recipient and the
   subject (`helpers/mailpit.ts`; every user gets a verification email).
