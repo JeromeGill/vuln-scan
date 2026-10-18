@@ -1,4 +1,7 @@
 import { BaAccount } from "./ba-account.entity.js";
+import { BaInvitation } from "./ba-invitation.entity.js";
+import { BaMember } from "./ba-member.entity.js";
+import { BaOrganization } from "./ba-organization.entity.js";
 import { BaSession } from "./ba-session.entity.js";
 import { BaUser } from "./ba-user.entity.js";
 import { BaVerification } from "./ba-verification.entity.js";
@@ -10,5 +13,8 @@ export const entities = [
   BaSession,
   BaAccount,
   BaVerification,
+  BaOrganization,
+  BaMember,
+  BaInvitation,
   EmailDelivery,
 ];

@@ -68,10 +68,10 @@ runtime; see [Architecture](architecture.md#workspaces).
 
 ## Schemas
 
-| Schema   | Contents                                     | Owner       |
-| -------- | -------------------------------------------- | ----------- |
-| `auth`   | `user`, `session`, `account`, `verification` | Better Auth |
-| `public` | `email_delivery`                             | app code    |
+| Schema   | Contents                                                                             | Owner       |
+| -------- | ------------------------------------------------------------------------------------ | ----------- |
+| `auth`   | `user`, `session`, `account`, `verification`, `organization`, `member`, `invitation` | Better Auth |
+| `public` | `email_delivery`                                                                     | app code    |
 
 Put an entity in a schema with `@Entity({ schema: "auth", name: "user" })`.
 `user` is a reserved word in Postgres, so hand-written SQL must quote it:
@@ -92,7 +92,8 @@ queue message's id, which is what makes sending idempotent (see
 ## Fixtures (sample data)
 
 `script/seed` loads `@repo/fixtures` into the development database
-(`DB_NAME`): so far 5 verified users. The data is plain TypeScript in
+(`DB_NAME`): so far 5 verified users, each with the personal organization
+sign-up gives every user (see [Authentication](auth.md#organizations)). The data is plain TypeScript in
 `packages/fixtures/src/data/`; records refer to each other by natural keys
 (e.g. a user's email), typed with `as const` so the keys are type-checked.
 Every fixture user's password is `fixturePassword` in `data/users.ts`. The
@@ -112,9 +113,12 @@ again.
 | Entity           | Table               | Holds                                                                                               |
 | ---------------- | ------------------- | --------------------------------------------------------------------------------------------------- |
 | `BaUser`         | `auth.user`         | name, email (unique), email_verified, image                                                         |
-| `BaSession`      | `auth.session`      | token (unique), expiry, IP, user agent → user (cascade)                                             |
+| `BaSession`      | `auth.session`      | token (unique), expiry, IP, user agent, `active_organization_id` → user (cascade)                   |
 | `BaAccount`      | `auth.account`      | one row per sign-in method; the email/password hash (`provider_id = 'credential'`) → user (cascade) |
 | `BaVerification` | `auth.verification` | verification tokens (e.g. email verification)                                                       |
+| `BaOrganization` | `auth.organization` | organizations (organization plugin): name, slug (unique), logo, metadata; one personal one per user |
+| `BaMember`       | `auth.member`       | a user's membership of an organization and their `role` → organization, user (both cascade)         |
+| `BaInvitation`   | `auth.invitation`   | invitations to an organization (unused until teams) → organization, inviter (both cascade)          |
 
 **Never write to these tables directly**: no repository writes, query-builder
 writes, or raw SQL. Change them through Better Auth only. Reading is fine, as

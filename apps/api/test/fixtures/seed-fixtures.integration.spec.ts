@@ -1,10 +1,10 @@
-import { BaUser } from "@repo/entities";
+import { BaMember, BaUser } from "@repo/entities";
 import { fixturePassword, users } from "@repo/fixtures";
 import { DataSource, In } from "typeorm";
 import { createAuth, type Auth } from "../../src/auth/auth.js";
 import { initializeDataSource } from "../../src/database.js";
 import { seedFixtures } from "../../src/fixtures/seed-fixtures.js";
-import { publisher } from "../helpers/app.js";
+import { deleteUsers, publisher } from "../helpers/app.js";
 
 describe("Fixtures: seed (integration)", () => {
   let dataSource: DataSource;
@@ -14,11 +14,11 @@ describe("Fixtures: seed (integration)", () => {
   beforeAll(async () => {
     dataSource = await initializeDataSource();
     auth = createAuth(dataSource, publisher);
-    await dataSource.getRepository(BaUser).delete({ email: In(emails) });
+    await deleteUsers(dataSource, emails);
   });
 
   afterAll(async () => {
-    await dataSource?.getRepository(BaUser).delete({ email: In(emails) });
+    if (dataSource) await deleteUsers(dataSource, emails);
     await dataSource?.destroy();
   });
 
@@ -37,6 +37,20 @@ describe("Fixtures: seed (integration)", () => {
         body: { email: users[0].email, password: fixturePassword },
       }),
     ).resolves.toMatchObject({ user: { email: users[0].email } });
+  });
+
+  it("gives every fixture user a personal organization, which they own", async () => {
+    const seeded = await dataSource
+      .getRepository(BaUser)
+      .findBy({ email: In(emails) });
+    const memberships = await dataSource
+      .getRepository(BaMember)
+      .findBy({ userId: In(seeded.map((user) => user.id)) });
+
+    expect(memberships.map(({ userId }) => userId).toSorted()).toEqual(
+      seeded.map(({ id }) => id).toSorted(),
+    );
+    expect(memberships.every(({ role }) => role === "owner")).toBe(true);
   });
 
   it("is idempotent", async () => {

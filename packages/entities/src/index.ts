@@ -1,4 +1,7 @@
 export { BaAccount } from "./ba-account.entity.js";
+export { BaInvitation } from "./ba-invitation.entity.js";
+export { BaMember } from "./ba-member.entity.js";
+export { BaOrganization } from "./ba-organization.entity.js";
 export { BaSession } from "./ba-session.entity.js";
 export { BaUser } from "./ba-user.entity.js";
 export { BaVerification } from "./ba-verification.entity.js";
