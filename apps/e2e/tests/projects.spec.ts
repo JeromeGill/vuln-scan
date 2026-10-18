@@ -122,3 +122,102 @@ test("S-0001 AC7: the dashboard and the create dialog fit a 360 px screen", asyn
   await expectToFit(page);
   await expectWithin(dialog, 360);
 });
+
+/** Creates a project of the signed-in user's and opens its page. */
+async function openNewProject(page: Page, name: string) {
+  const project = await createProject(page.request, name);
+  await page.goto(`/projects/${project.id}`);
+  await expect(
+    page.getByRole("heading", { level: 1, name: project.name, exact: true }),
+  ).toBeVisible();
+  return project;
+}
+
+test("S-0001 AC4: renames a project from its page", async ({ page }) => {
+  await openNewProject(page, uniqueName(storefront.name));
+  const name = uniqueName(adminDashboard.name);
+
+  await page.getByRole("button", { name: "Rename" }).click();
+  const dialog = page.getByRole("dialog", { name: "Rename project" });
+  // Spaces around the name are trimmed, as when creating one.
+  await dialog.getByLabel("Name").fill(`  ${name}  `);
+  await dialog.getByRole("button", { name: "Rename" }).click();
+
+  await expect(dialog).toBeHidden();
+  await expect(
+    page.getByRole("heading", { level: 1, name, exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(`Renamed the project to ${name}.`)).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { level: 1, name, exact: true }),
+  ).toBeVisible();
+
+  await page.getByRole("link", { name: "Dashboard" }).first().click();
+  await expect(
+    projectsTable(page).getByRole("link", { name, exact: true }),
+  ).toBeVisible();
+});
+
+test("S-0001 AC5: deletes a project after its name is typed, and returns to the dashboard", async ({
+  page,
+}) => {
+  const project = await openNewProject(page, uniqueName(storefront.name));
+
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  const confirm = page.getByRole("alertdialog", { name: "Delete project?" });
+  const button = confirm.getByRole("button", { name: "Delete project" });
+  const field = confirm.getByLabel(`Type ${project.name} to confirm`);
+  await expect(button).toBeDisabled();
+  await field.fill(project.name.toUpperCase());
+  await expect(button).toBeDisabled();
+  await field.fill(project.name);
+  await button.click();
+
+  await expect(page).toHaveURL("/dashboard");
+  await expect(page.getByText(`Deleted ${project.name}.`)).toBeVisible();
+  await expect(
+    projectsTable(page).getByRole("link", { name: project.name, exact: true }),
+  ).toHaveCount(0);
+  // Through the api rather than the page, so the browser doesn't log the
+  // 404. (That its tokens and files go with it is covered by the api's
+  // delete-project spec.)
+  const gone = await page.request.get(`/api/projects/${project.id}`);
+  expect(gone.status()).toBe(404);
+});
+
+test("S-0001 AC7: the project page and its rename and delete dialogs fit a 360 px screen", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  // 100 characters without a space, the longest name there can be.
+  const suffix = uniqueSuffix();
+  const project = await openNewProject(
+    page,
+    "a".repeat(100 - suffix.length) + suffix,
+  );
+  await expectToFit(page);
+
+  await page.getByRole("button", { name: "Rename" }).click();
+  const dialog = page.getByRole("dialog", { name: "Rename project" });
+  await dialog.getByLabel("Name").fill(`${project.name}!`);
+  await dialog.getByRole("button", { name: "Rename" }).click();
+  await expect(dialog.getByRole("alert")).toHaveText(
+    "Use at most 100 characters.",
+  );
+  await expectToFit(page);
+  await expectWithin(dialog, 360);
+  await dialog.getByRole("button", { name: "Cancel" }).click();
+  await expect(dialog).toBeHidden();
+
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  const confirm = page.getByRole("alertdialog", { name: "Delete project?" });
+  await confirm
+    .getByLabel(`Type ${project.name} to confirm`)
+    .fill(project.name);
+  await expect(
+    confirm.getByRole("button", { name: "Delete project" }),
+  ).toBeEnabled();
+  await expectToFit(page);
+  await expectWithin(confirm, 360);
+});

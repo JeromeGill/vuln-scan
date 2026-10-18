@@ -16,25 +16,32 @@ import {
 
 /**
  * Confirms a deletion (or another destructive action, named by
- * `confirmLabel` and `pendingLabel`). Stays open (and disabled) while `onConfirm` runs,
- * closes when it succeeds, and toasts its error and stays open when it fails.
+ * `confirmLabel` and `pendingLabel`). Stays open (and disabled) while
+ * `onConfirm` runs, closes when it succeeds, and toasts its error and stays
+ * open when it fails. `children` go between the description and the
+ * buttons (e.g. a field to type a name into), and `confirmDisabled` keeps
+ * the confirm button off until they're filled in.
  */
 export function ConfirmDialog({
   open,
   onOpenChange,
   title,
   description,
+  children,
   onConfirm,
   confirmLabel = "Delete",
   pendingLabel = "Deleting…",
+  confirmDisabled = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
   description: ReactNode;
+  children?: ReactNode;
   onConfirm: () => Promise<unknown>;
   confirmLabel?: string;
   pendingLabel?: string;
+  confirmDisabled?: boolean;
 }) {
   const [pending, setPending] = useState(false);
 
@@ -45,11 +52,12 @@ export function ConfirmDialog({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
+        {children}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
-            disabled={pending}
+            disabled={pending || confirmDisabled}
             onClick={async (event) => {
               event.preventDefault();
               setPending(true);
