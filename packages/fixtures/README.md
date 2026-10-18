@@ -17,7 +17,8 @@ request/response cases for the api's endpoints built from that data.
   (`widgets/create.ts` for `widgetsContract.create`), exporting a function
   that returns `ApiCase`s (`src/api/case.ts`): a label, a request, and the
   expected response without generated fields, typed with the contract's
-  request and response types. So far `projects/` (create, list, rename),
+  request and response types. So far `environments/` (list),
+  `projects/` (create, list, rename),
   `upload-tokens/` (create, list), and `uploads/` (create; its multipart
   request holds the file's contents as a string, which the spec attaches).
   See [Testing](../../docs/testing.md#one-spec-per-endpoint).

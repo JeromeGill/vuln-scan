@@ -6,6 +6,7 @@ import { DataSource } from "typeorm";
 import { AccountModule } from "./account/account.module.js";
 import { createAuth } from "./auth/auth.js";
 import { databaseOptions } from "./database.js";
+import { EnvironmentsModule } from "./environments/environments.module.js";
 import { JobPublisher } from "./messaging/job-publisher.js";
 import { MessagingModule } from "./messaging/messaging.module.js";
 import { orpcConfig } from "./orpc.js";
@@ -26,6 +27,7 @@ import { UploadsModule } from "./uploads/uploads.module.js";
     ORPCModule.forRoot(orpcConfig),
     AccountModule,
     ProjectsModule,
+    EnvironmentsModule,
     UploadTokensModule,
     UploadsModule,
   ],
