@@ -20,12 +20,12 @@ services:
   # Job queue (docs/messaging.md). Local credentials only; they must match
   # RABBITMQ_URL in .env. The worker integration tests use their own vhost
   # (RABBITMQ_URL in .env.test), created by apps/worker/test/global-setup.ts.
-  # Management UI: http://localhost:15672 (app / app).
+  # Management UI: http://localhost:15672 (vulnscan / vulnscan).
   rabbitmq:
     image: rabbitmq:4.3-management
     environment:
-      RABBITMQ_DEFAULT_USER: app
-      RABBITMQ_DEFAULT_PASS: app
+      RABBITMQ_DEFAULT_USER: vulnscan
+      RABBITMQ_DEFAULT_PASS: vulnscan
     ports:
       - "5672:5672"
       - "15672:15672"

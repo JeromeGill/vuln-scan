@@ -81,7 +81,7 @@ that adds a model. Add an entity for it and add it to the map.
 ## Integration tests: "Refusing to run integration tests against …"
 
 `DB_NAME` doesn't end in `_test`. Check `.env.test` (should contain
-`DB_NAME=app_test`) and that `DB_NAME` isn't set in your shell; shell
+`DB_NAME=vulnscan_test`) and that `DB_NAME` isn't set in your shell; shell
 values win over the files.
 
 ## Integration tests can't connect (`ECONNREFUSED 127.0.0.1:5432`)
@@ -180,17 +180,17 @@ both).
 ## Worker integration tests: "Refusing to run … RabbitMQ vhost"
 
 `RABBITMQ_URL` in `.env.test` must name a vhost ending in `_test`
-(`amqp://app:app@localhost:5672/app_test`). Run `script/bootstrap`
-to add the missing key, and check `RABBITMQ_URL` isn't set in your shell.
-If the global setup fails to reach the management API instead, RabbitMQ
-isn't running: `docker compose up -d --wait`.
+(`amqp://vulnscan:vulnscan@localhost:5672/vulnscan_test`). Run
+`script/bootstrap` to add the missing key, and check `RABBITMQ_URL` isn't set
+in your shell. If the global setup fails to reach the management API instead,
+RabbitMQ isn't running: `docker compose up -d --wait`.
 
 ## `Bind for :::5432 failed: port is already allocated` from a git worktree
 
 docker compose names the project after the directory, so a second checkout
 (e.g. a git worktree) starts a second set of containers that clash with the
 first on the published ports. Share the main checkout's containers with
-`export COMPOSE_PROJECT_NAME=app`, and use a separate `DB_NAME` (and
+`export COMPOSE_PROJECT_NAME=vulnscan`, and use a separate `DB_NAME` (and
 vhost) in the worktree's `.env.test` if both checkouts run tests at once.
 The failed project's containers are left in the `Created` state; remove
 them with `docker compose -p <directory name> rm`.

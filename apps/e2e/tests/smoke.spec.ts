@@ -56,7 +56,7 @@ test("serves the web app manifest", async ({ request }) => {
   const response = await request.get("/manifest.webmanifest");
   expect(response.ok()).toBe(true);
   expect(await response.json()).toMatchObject({
-    name: "My App",
+    name: "vulnscan",
     display: "standalone",
     start_url: "/",
   });

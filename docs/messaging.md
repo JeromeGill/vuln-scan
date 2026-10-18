@@ -12,7 +12,7 @@ Nest's transports: see [Decisions](decisions/rabbitmq-job-queue-for-background-w
 producers (the api: verification emails)
   │  publish JSON envelope, routing key = message type
   ▼
-app.jobs (topic exchange)
+vulnscan.jobs (topic exchange)
   │  email.#                         (future: scan.# → scan queue, …)
   ▼
 email (quorum queue) ──consume──▶ apps/worker  ──SMTP──▶ Mailpit / provider
@@ -34,7 +34,7 @@ email (quorum queue) ──consume──▶ apps/worker  ──SMTP──▶ Mai
 | `docker-compose.yml`               | `rabbitmq` (4.3 with the management UI) and `mailpit`                                                                            |
 
 Locally: RabbitMQ on `amqp://localhost:5672`, management UI at
-http://localhost:15672 (`app` / `app`), Mailpit's inbox at
+http://localhost:15672 (`vulnscan` / `vulnscan`), Mailpit's inbox at
 http://localhost:8025 (SMTP on 1025). On Railway the worker sends through
 Resend (see [Deployment](deployment.md#email)). `SMTP_URL` and `MAIL_FROM`
 have no defaults, so a worker without them doesn't start; once started,
@@ -103,7 +103,7 @@ languages must use exactly the arguments in `topology.json`.
 
 | Name                | Kind           | Arguments                                                     | Purpose                                                                |
 | ------------------- | -------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `app.jobs`          | topic exchange | durable                                                       | producers publish here with the message `type` as routing key          |
+| `vulnscan.jobs`     | topic exchange | durable                                                       | producers publish here with the message `type` as routing key          |
 | `<queue>`           | quorum queue   | `x-delivery-limit: 5`, dead-letter to `""` / `<queue>.parked` | work queue, bound to its patterns (`email` ← `email.#`)                |
 | `<queue>.retry.<n>` | quorum queue   | dead-letter to `""` / `<queue>`                               | holds the n-th retry until its per-message TTL (`expiration`) runs out |
 | `<queue>.parked`    | quorum queue   | —                                                             | messages that won't be retried, for inspection or replay               |
@@ -156,7 +156,7 @@ second email. See `apps/worker/src/email/email-delivery.service.ts`.
 
 Look in the management UI (Queues → `email.parked` → Get messages) for the
 body and the `parked-reason` / `last-error` headers. To replay one after
-fixing the cause, publish its body again to `app.jobs` with its `type` as
+fixing the cause, publish its body again to `vulnscan.jobs` with its `type` as
 routing key (the UI's "Publish message" on the exchange), or use a shovel.
 Delivery deduplication still applies, so replaying an email that was sent is
 harmless.

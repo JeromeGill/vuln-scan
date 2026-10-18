@@ -24,7 +24,7 @@ export const env = createEnv({
      * AMQP URL for publishing jobs (verification emails); its path is the
      * vhost (none means the default `/`).
      */
-    RABBITMQ_URL: z.url().default("amqp://app:app@localhost:5672"),
+    RABBITMQ_URL: z.url().default("amqp://vulnscan:vulnscan@localhost:5672"),
 
     /**
      * Google sign-in: the OAuth client's ID and secret, both or

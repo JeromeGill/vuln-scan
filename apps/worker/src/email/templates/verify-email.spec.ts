@@ -13,7 +13,7 @@ const email = await renderVerifyEmail(data);
 describe("renderVerifyEmail", () => {
   it("is addressed to the user, with the link", () => {
     expect(email.to).toBe("ada@example.com");
-    expect(email.subject).toBe("Verify your email for My App");
+    expect(email.subject).toBe("Verify your email for vulnscan");
     expect(email.text).toContain(`Verify email ${data.url}`);
     expect(email.html).toContain(`href="${data.url.replaceAll("&", "&amp;")}"`);
   });

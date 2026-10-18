@@ -40,7 +40,7 @@ export async function waitForEmailTo(
 
 /** The link in the newest verification email to `address`. */
 export async function verificationLink(address: string): Promise<string> {
-  const text = await waitForEmailTo(address, "Verify your email for My App");
+  const text = await waitForEmailTo(address, "Verify your email for vulnscan");
   const link = /(http\S+\/api\/auth\/verify-email\?\S+)/.exec(text)?.[1];
   if (!link)
     throw new Error(`No verification link in the email to ${address}.`);

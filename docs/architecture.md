@@ -4,7 +4,7 @@ This is a pnpm + Turborepo monorepo with three apps, a browser test
 suite, and seven internal packages.
 
 ```
-nest-template/
+vulnscan/
 ├── apps/
 │   ├── web/          Next.js 16 (App Router, React 19) — port 3000
 │   ├── api/          NestJS 12 (Express) + TypeORM + Better Auth — port 3002
@@ -53,7 +53,7 @@ apps/web (Next.js)
   │                                            ▲
   │                                            │ TypeORM (never syncs)
   │      RabbitMQ ──jobs (JSON)──▶ apps/worker ┘
-  │      (app.jobs exchange)        │
+  │      (vulnscan.jobs exchange)   │
   │                                    └──SMTP──▶ Mailpit (local) / provider
 ```
 

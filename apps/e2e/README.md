@@ -8,9 +8,9 @@ add tests.
 
 - **Starts its own servers** (`playwright.config.ts`): api on 3102, web on
   3100, and the worker, with their own database and RabbitMQ vhost
-  (`app_e2e_test`, reset by `prepare.ts` on every run). It never
+  (`vulnscan_e2e_test`, reset by `prepare.ts` on every run). It never
   reuses a running server, so it doesn't touch `script/server`. Storage is
-  the `fake-gcs` emulator's `app-e2e-test` bucket.
+  the `fake-gcs` emulator's `vulnscan-e2e-test` bucket.
 - **Depends on:** the built api and worker (`dist/`), `@repo/config/e2e`,
   and `@repo/fixtures` for sample values. It talks to the app only as a
   browser or HTTP client would; no app code is imported.

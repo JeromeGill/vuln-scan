@@ -9,7 +9,7 @@ export const env = createEnv({
     ...databaseVars,
 
     /** AMQP URL; its path is the vhost (none means the default `/`). */
-    RABBITMQ_URL: z.url().default("amqp://app:app@localhost:5672"),
+    RABBITMQ_URL: z.url().default("amqp://vulnscan:vulnscan@localhost:5672"),
     /**
      * Delay before each retry of a failed job, in milliseconds, comma
      * separated. A job that still fails after the last one is parked.

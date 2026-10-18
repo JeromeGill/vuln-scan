@@ -1,5 +1,5 @@
 {
-  "name": "nest-template",
+  "name": "vulnscan",
   "private": true,
   "scripts": {
     "build": "turbo run build",

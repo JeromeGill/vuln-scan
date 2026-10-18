@@ -219,7 +219,7 @@ and it opens standalone at `/`, which redirects to `/dashboard` or `/login`.
   - `/_next/static/*` (content-hashed) is cache-first; icons are served
     from the cache and refreshed in the background. Cache writes happen in
     the background, so a full cache never fails a response. This cache
-    (`app-static`) isn't versioned, since a hashed URL never changes
+    (`vulnscan-static`) isn't versioned, since a hashed URL never changes
     content: a new worker reuses what the old one cached, and trims it to
     the newest 300 entries when it activates.
   - **Updates:** it's registered as `/sw.js?v=<version>`, a random value
@@ -228,7 +228,7 @@ and it opens standalone at `/`, which redirects to `/dashboard` or `/login`.
     new worker in the background. It doesn't `skipWaiting`: it takes over
     once every app window is closed (the next launch of the installed
     app), then drops the previous build's offline page
-    (`app-offline-<v>`). Pages come from the network, so a new build is
+    (`vulnscan-offline-<v>`). Pages come from the network, so a new build is
     visible on the next page load either way.
   - Registration uses `updateViaCache: "none"`, so the browser always
     checks `/sw.js` itself for updates rather than its HTTP cache.

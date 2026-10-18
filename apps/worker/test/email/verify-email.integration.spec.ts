@@ -62,7 +62,7 @@ describe("Verification email (integration)", () => {
       { what: "the email" },
     );
     const email = await message(summary.ID);
-    expect(email.Subject).toBe("Verify your email for My App");
+    expect(email.Subject).toBe("Verify your email for vulnscan");
     expect(email.Text).toContain(job.data.url);
     expect(email.Text).toContain("The link expires in an hour.");
     expect(email.HTML).toContain(
