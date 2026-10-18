@@ -10,6 +10,7 @@ export {
   type EmailDeliveryStatus,
 } from "./email-delivery.entity.js";
 export { Project } from "./project.entity.js";
+export { UploadToken } from "./upload-token.entity.js";
 
 export * from "./data-source.js";
 export { entities } from "./entities.js";

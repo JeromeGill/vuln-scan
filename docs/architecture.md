@@ -50,7 +50,7 @@ apps/web (Next.js)
   │                                     auth schema: user, session,
   │                                     account, verification
   │                                     public schema: email_delivery,
-  │                                     project
+  │                                     project, upload_token
   │                                            ▲
   │                                            │ TypeORM (never syncs)
   │      RabbitMQ ──jobs (JSON)──▶ apps/worker ┘

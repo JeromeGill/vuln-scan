@@ -2,6 +2,7 @@ import { Controller, Res } from "@nestjs/common";
 import { Implement, implement } from "@orpc/nest";
 import { projectsContract } from "@repo/contracts";
 import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
+import { activeOrganizationId } from "../auth/active-organization.js";
 import { ProjectsService } from "./projects.service.js";
 
 @Controller()
@@ -31,15 +32,4 @@ export class ProjectsController {
       ),
     };
   }
-}
-
-/**
- * The organization the session works in. Every session gets one when it's
- * created (see docs/auth.md#organizations), so a session without one is a
- * bug, not a client error.
- */
-function activeOrganizationId(session: UserSession): string {
-  const id = session.session.activeOrganizationId;
-  if (!id) throw new Error("The session has no active organization.");
-  return id;
 }

@@ -14,7 +14,7 @@ try {
   const auth = createAuth(dataSource, { publish: async () => {} });
   const result = await seedFixtures(dataSource, auth);
   console.log(
-    `Seeded ${env.DB_NAME}: created ${result.users} users and ${result.projects} projects.`,
+    `Seeded ${env.DB_NAME}: created ${result.users} users, ${result.projects} projects, and ${result.uploadTokens} upload tokens.`,
   );
 } finally {
   await dataSource.destroy();

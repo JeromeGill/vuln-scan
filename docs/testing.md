@@ -52,7 +52,9 @@ pnpm --filter web test:watch                                  # web, watch mode
 The api, worker, and packages use **Vitest** with globals (`describe`, `it`, `expect`). Integration
 tests are grouped by feature (`test/auth/sign-up.integration.spec.ts`,
 `test/auth/sign-in.integration.spec.ts`, `test/account/get-account.integration.spec.ts`, …).
-The api has no unit specs yet, so its unit config passes with none.
+The api's unit specs cover code with no Nest or database, so far
+`src/upload-tokens/upload-token.spec.ts` (generating and hashing upload
+tokens, and their expiry).
 `test/fixtures/seed-fixtures.integration.spec.ts`
 loads all of `@repo/fixtures` into the test database (and removes it
 afterwards), so a broken fixture fails the suite.
@@ -142,7 +144,7 @@ For api routes, use the helpers in `test/helpers/`. `app.ts`:
   those don't cascade from the user.
 
 `test/helpers/builders.ts` creates the rows a spec needs through the api
-(so far `createProject`; see
+(so far `createProject` and `createUploadToken`; see
 [Testing a new endpoint](#testing-a-new-endpoint)).
 
 The integration tests run with dummy Google credentials

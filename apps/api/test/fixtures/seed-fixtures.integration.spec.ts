@@ -1,5 +1,5 @@
-import { BaMember, BaUser, Project } from "@repo/entities";
-import { fixturePassword, projects, users } from "@repo/fixtures";
+import { BaMember, BaUser, Project, UploadToken } from "@repo/entities";
+import { fixturePassword, projects, uploadTokens, users } from "@repo/fixtures";
 import { DataSource, In } from "typeorm";
 import { createAuth, type Auth } from "../../src/auth/auth.js";
 import { initializeDataSource } from "../../src/database.js";
@@ -26,6 +26,7 @@ describe("Fixtures: seed (integration)", () => {
     await expect(seedFixtures(dataSource, auth)).resolves.toEqual({
       users: users.length,
       projects: projects.length,
+      uploadTokens: uploadTokens.length,
     });
 
     const seeded = await dataSource
@@ -75,10 +76,39 @@ describe("Fixtures: seed (integration)", () => {
     ).resolves.toBe(projects.length);
   });
 
+  it("creates the fixture upload tokens for their projects, by the projects' owners", async () => {
+    for (const { name, project: projectName, expiresInDays } of uploadTokens) {
+      const owner = projects.find(
+        (project) => project.name === projectName,
+      )?.owner;
+      if (!owner) throw new Error(`No fixture project ${projectName}.`);
+      const user = await dataSource
+        .getRepository(BaUser)
+        .findOneByOrFail({ email: owner });
+      const { organizationId } = await dataSource
+        .getRepository(BaMember)
+        .findOneByOrFail({ userId: user.id });
+      const project = await dataSource
+        .getRepository(Project)
+        .findOneByOrFail({ organizationId, name: projectName });
+      const token = await dataSource
+        .getRepository(UploadToken)
+        .findOneByOrFail({ projectId: project.id, name });
+      expect(token).toMatchObject({
+        createdById: user.id,
+        lastUsedAt: null,
+        revokedAt: null,
+      });
+      expect(token.tokenHash).toMatch(/^[0-9a-f]{64}$/);
+      expect(token.expiresAt === null).toBe(expiresInDays === null);
+    }
+  });
+
   it("is idempotent", async () => {
     await expect(seedFixtures(dataSource, auth)).resolves.toEqual({
       users: 0,
       projects: 0,
+      uploadTokens: 0,
     });
   });
 });
