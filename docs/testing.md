@@ -309,7 +309,9 @@ calls. `pnpm --filter web test` runs them, and so do `pnpm test` and
 - **Type the mock responses from the contracts.** `ApiOutputs["account"]["get"]`
   (from `test/server.ts`) is a route's response type; `anAccount(fields?)`
   builds an `AccountDto` from the first fixture user with `fields` on top
-  (`aProject(fields?)` a `ProjectDto` from the first fixture project);
+  (`aProject(fields?)` a `ProjectDto` from the first fixture project,
+  `anUploadToken(fields?)` an `UploadTokenDto` and
+  `aCreatedUploadToken(fields?)` the create response with its `token`);
   `apiError({ code, status, message, … })` sends an oRPC error like the api
   does (e.g. a `CONFLICT`).
 - **Use the api's fixture cases** (`@repo/fixtures/api`, see
@@ -324,8 +326,11 @@ calls. `pnpm --filter web test` runs them, and so do `pnpm test` and
 - Stubs are kept to what jsdom or a test can't provide, with a comment:
   `window.matchMedia` in `test/setup.ts` (sonner reads it), pointer capture
   and `scrollIntoView` there too (Radix's Select and DropdownMenu call
-  them; choose an option by clicking the field's label, then the `option`),
-  and
+  them). Open a Select from the keyboard (`user.tab()` to it, then
+  `{Enter}`) and then click the `option`: jsdom puts every pointer event at
+  (0, 0), so after a click on the field Radix takes the option's click for
+  the same press and ignores it (see
+  `test/upload-tokens/create-upload-token-dialog.spec.tsx`), and
   `next/navigation`'s `useRouter` (or `useSearchParams`, read from
   `window.location`) in tests of components that navigate or read the URL
   (there's no Next.js router outside `next dev`/`next start`).
@@ -335,7 +340,8 @@ calls. `pnpm --filter web test` runs them, and so do `pnpm test` and
   `lib/orpc.ts` keeps a reference to `fetch` when it's imported, which
   happens before `beforeAll` runs.
 - Specs end in `.spec.tsx` (`.spec.ts` for plain functions) and are
-  grouped by feature (`test/auth/`, `test/dashboard/`, `test/projects/`).
+  grouped by feature (`test/auth/`, `test/dashboard/`, `test/projects/`,
+  `test/upload-tokens/`).
 
 The pages are tested together, in a real browser, by the
 [browser tests](#browser-tests).
@@ -391,8 +397,8 @@ libraries.
   the shared state with `test.use({ storageState: { cookies: [], origins: [] } })`.
 - **Data per test, through the api.** `helpers/api.ts` creates data with
   `page.request`, which shares the page's cookies, so it belongs to the
-  signed-in user (so far `signUp` and `createProject`; add a helper per resource as tests
-  need them). Values are unique and come from `@repo/fixtures`. Tests run
+  signed-in user (so far `signUp`, `createProject`, and `createUploadToken`;
+  add a helper per resource as tests need them). Values are unique and come from `@repo/fixtures`. Tests run
   in parallel and share the user, so find your own rows rather than
   counting everything on a page.
 - **Storage:** the api is configured with the `fake-gcs` emulator, in its
@@ -440,6 +446,11 @@ output.
 - Write it so it passes on both projects: columns hidden on phones aren't
   there to click, so prefer the actions menu.
 - Keep helpers small; add one only when two tests need it.
+  `helpers/layout.ts` has the 360 px checks (`expectToFit`: neither the
+  page nor a table scrolls sideways; `expectWithin`: a dialog fits the
+  screen).
+- A test that copies to the clipboard grants it first:
+  `test.use({ permissions: ["clipboard-read", "clipboard-write"] })`.
 
 ### Limits
 

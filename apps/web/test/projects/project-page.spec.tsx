@@ -4,13 +4,17 @@ import { describe, expect, it } from "vitest";
 import { ProjectPage } from "@/containers/projects/project-page";
 import { formatDate } from "@/lib/format";
 import { renderWithProviders } from "../render";
-import { aProject, apiError, server } from "../server";
+import { anUploadToken, aProject, apiError, server } from "../server";
 
 describe("Project page", () => {
-  it("shows the project's name and when it was created", async () => {
+  it("shows the project's name, when it was created, and its tokens", async () => {
     const project = aProject();
+    const token = anUploadToken();
     server.use(
       http.get(`/api/projects/${project.id}`, () => HttpResponse.json(project)),
+      http.get(`/api/projects/${project.id}/upload-tokens`, () =>
+        HttpResponse.json({ items: [token], total: 1 }),
+      ),
     );
 
     renderWithProviders(<ProjectPage id={project.id} />);
@@ -21,6 +25,10 @@ describe("Project page", () => {
     expect(
       screen.getByText(`Created ${formatDate(project.createdAt)}`),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Tokens" }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText(token.name)).toBeInTheDocument();
   });
 
   it.each([

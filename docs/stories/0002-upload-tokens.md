@@ -1,7 +1,7 @@
 ---
 id: S-0002
 title: Issue upload tokens for a project
-status: in-progress # proposed | in-progress | done | dropped
+status: done # proposed | in-progress | done | dropped
 ---
 
 ## Story
@@ -39,5 +39,23 @@ can upload its lockfiles without my password or session.
 
 ## Implementation
 
-Filled in when the story is done: the main files and routes, and the commits
-(`git log --grep "Story: S-0002"`).
+- **Api:** `GET`, `POST /projects/{projectId}/upload-tokens` and
+  `DELETE /projects/{projectId}/upload-tokens/{id}`
+  (`packages/contracts/src/upload-tokens/`), implemented in
+  `apps/api/src/upload-tokens/`: the `UploadToken` entity
+  (`packages/entities/src/upload-token.entity.ts`, deleted with its
+  project), and generating and hashing tokens in `upload-token.ts` (`vs_`
+  and 32 random bytes in base64url; the SHA-256 hex is stored with the
+  last four characters). Revoking sets `revokedAt`, and revoked tokens are
+  no longer listed. Uploading with a token, and refusing revoked or
+  expired ones, is S-0003.
+- **Web:** the Tokens section of the project page,
+  `apps/web/containers/upload-tokens/`: the table (`columns.tsx`; on
+  phones the minor columns fold into the name cell), the create dialog,
+  which shows the full token once with a copy button and forgets it when
+  closed, and revoking through `ConfirmDialog`.
+- **Tests:** `apps/api/test/upload-tokens/` with the cases in
+  `packages/fixtures/src/api/upload-tokens/`, `apps/web/test/upload-tokens/`,
+  and the browser tests in `apps/e2e/tests/upload-tokens.spec.ts` (AC1–AC4
+  and AC6).
+- **Commits:** `git log --grep "Story: S-0002"`.

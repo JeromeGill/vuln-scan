@@ -10,10 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
+import { UploadTokensSection } from "@/containers/upload-tokens/upload-tokens-section";
 
 /**
- * A project's page. Mostly empty for now: upload tokens (S-0002) and
- * environments (S-0003) fill it.
+ * A project's page: its upload tokens. Environments (S-0003) come next.
  */
 export function ProjectPage({ id }: { id: string }) {
   const { data: project, error } = useQuery(
@@ -29,10 +29,13 @@ export function ProjectPage({ id }: { id: string }) {
         </Link>
       </Button>
       {project ? (
-        <PageHeader
-          title={project.name}
-          description={`Created ${formatDate(project.createdAt)}`}
-        />
+        <>
+          <PageHeader
+            title={project.name}
+            description={`Created ${formatDate(project.createdAt)}`}
+          />
+          <UploadTokensSection projectId={project.id} />
+        </>
       ) : error ? (
         <ProjectError error={error} />
       ) : (

@@ -1,7 +1,14 @@
 import { z } from "zod";
 
-/** An upload token's name: 1–100 characters once trimmed. */
-export const uploadTokenNameSchema = z.string().trim().min(1).max(100);
+/**
+ * An upload token's name: 1–100 characters once trimmed. The messages are
+ * shown under the web form's name field.
+ */
+export const uploadTokenNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Enter a name.")
+  .max(100, "Use at most 100 characters.");
 
 /** How long a new upload token lasts, in days; `null` never expires. */
 export const uploadTokenExpirySchema = z.literal([30, 90, 365]).nullable();

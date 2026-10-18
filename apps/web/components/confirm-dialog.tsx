@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/alert-dialog";
 
 /**
- * Confirms a deletion. Stays open (and disabled) while `onConfirm` runs,
+ * Confirms a deletion (or another destructive action, named by
+ * `confirmLabel` and `pendingLabel`). Stays open (and disabled) while `onConfirm` runs,
  * closes when it succeeds, and toasts its error and stays open when it fails.
  */
 export function ConfirmDialog({
@@ -24,12 +25,16 @@ export function ConfirmDialog({
   title,
   description,
   onConfirm,
+  confirmLabel = "Delete",
+  pendingLabel = "Deleting…",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
   description: ReactNode;
   onConfirm: () => Promise<unknown>;
+  confirmLabel?: string;
+  pendingLabel?: string;
 }) {
   const [pending, setPending] = useState(false);
 
@@ -58,7 +63,7 @@ export function ConfirmDialog({
               }
             }}
           >
-            {pending ? "Deleting…" : "Delete"}
+            {pending ? pendingLabel : confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

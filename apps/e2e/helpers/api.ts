@@ -54,3 +54,28 @@ export async function createProject(request: APIRequestContext, name: string) {
   const response = await post(request, "/projects", { name });
   return createdProject.parse(await response.json());
 }
+
+const createdUploadToken = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  token: z.string(),
+  lastFour: z.string(),
+  expiresAt: z.coerce.date().nullable(),
+});
+
+/**
+ * Creates an upload token named `name` for the project with id `projectId`;
+ * the response holds the full token.
+ */
+export async function createUploadToken(
+  request: APIRequestContext,
+  projectId: string,
+  name: string,
+  expiresInDays: 30 | 90 | 365 | null = null,
+) {
+  const response = await post(request, `/projects/${projectId}/upload-tokens`, {
+    name,
+    expiresInDays,
+  });
+  return createdUploadToken.parse(await response.json());
+}
