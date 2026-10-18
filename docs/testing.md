@@ -315,7 +315,8 @@ calls. `pnpm --filter web test` runs them, and so do `pnpm test` and
   builds an `AccountDto` from the first fixture user with `fields` on top
   (`aProject(fields?)` a `ProjectDto` from the first fixture project,
   `anUploadToken(fields?)` an `UploadTokenDto` and
-  `aCreatedUploadToken(fields?)` the create response with its `token`);
+  `aCreatedUploadToken(fields?)` the create response with its `token`,
+  `anEnvironment(fields?)` an `EnvironmentDto` with a live release);
   `apiError({ code, status, message, … })` sends an oRPC error like the api
   does (e.g. a `CONFLICT`).
 - **Use the api's fixture cases** (`@repo/fixtures/api`, see
@@ -344,8 +345,8 @@ calls. `pnpm --filter web test` runs them, and so do `pnpm test` and
   `lib/orpc.ts` keeps a reference to `fetch` when it's imported, which
   happens before `beforeAll` runs.
 - Specs end in `.spec.tsx` (`.spec.ts` for plain functions) and are
-  grouped by feature (`test/auth/`, `test/dashboard/`, `test/projects/`,
-  `test/upload-tokens/`).
+  grouped by feature (`test/auth/`, `test/dashboard/`, `test/environments/`,
+  `test/projects/`, `test/upload-tokens/`).
 
 The pages are tested together, in a real browser, by the
 [browser tests](#browser-tests).
@@ -401,7 +402,8 @@ libraries.
   the shared state with `test.use({ storageState: { cookies: [], origins: [] } })`.
 - **Data per test, through the api.** `helpers/api.ts` creates data with
   `page.request`, which shares the page's cookies, so it belongs to the
-  signed-in user (so far `signUp`, `createProject`, and `createUploadToken`;
+  signed-in user (so far `signUp`, `createProject`, `createUploadToken`, and
+  `uploadLockfile`, which uploads with a token as CI does;
   add a helper per resource as tests need them). Values are unique and come from `@repo/fixtures`. Tests run
   in parallel and share the user, so find your own rows rather than
   counting everything on a page.

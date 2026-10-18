@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import type { APIRequestContext } from "@playwright/test";
 import { fixturePassword, users } from "@repo/fixtures";
+import type { UploadRequest } from "@repo/fixtures/api";
 import { z } from "zod";
 import { verificationLink } from "./mailpit.ts";
 
@@ -78,4 +79,42 @@ export async function createUploadToken(
     expiresInDays,
   });
   return createdUploadToken.parse(await response.json());
+}
+
+const uploadedLockfile = z.object({
+  environment: z.string(),
+  version: z.string(),
+  path: z.string(),
+  live: z.boolean(),
+});
+
+/**
+ * Uploads a lockfile as CI does, with the upload token `token`: a
+ * multipart `POST /api/uploads` (the URL the project page's `curl` example
+ * uses) with the token as a bearer token. `upload.file` is the file's
+ * contents, sent under the path's file name.
+ */
+export async function uploadLockfile(
+  request: APIRequestContext,
+  token: string,
+  upload: UploadRequest,
+) {
+  const { file, ...fields } = upload;
+  const response = await request.post("/api/uploads", {
+    headers: { Authorization: `Bearer ${token}` },
+    multipart: {
+      ...fields,
+      file: {
+        name: fields.path.slice(fields.path.lastIndexOf("/") + 1),
+        mimeType: "application/octet-stream",
+        buffer: Buffer.from(file),
+      },
+    },
+  });
+  if (!response.ok()) {
+    throw new Error(
+      `POST /api/uploads: ${response.status()} ${await response.text()}`,
+    );
+  }
+  return uploadedLockfile.parse(await response.json());
 }

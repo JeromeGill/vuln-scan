@@ -7,8 +7,10 @@
 [TanStack Query](https://tanstack.com/query) through the oRPC client. So
 far it has the account pages (sign-up, login, email verification), the
 dashboard listing the user's projects (`/dashboard`, with the create
-dialog), and the project page (`/projects/<id>`) with its upload tokens,
-where the project is renamed or deleted (typing its name to confirm).
+dialog), and the project page (`/projects/<id>`) with its environments
+(each with its live version), its upload tokens, and a `curl` command for
+uploading lockfiles from CI, where the project is renamed or deleted
+(typing its name to confirm).
 
 ## Layout
 
@@ -29,18 +31,19 @@ apps/web/
 ├── containers/               feature UI: one folder per feature
 │   ├── dashboard/            the dashboard: the projects table and the create dialog
 │   ├── projects/             projects table, columns, name form, create and rename dialogs, delete dialog (type the name), project page
+│   ├── environments/         the project page's Environments section (table, columns) and its Upload from CI section (the curl command)
 │   ├── upload-tokens/        the project page's Tokens section: table, columns, form, create dialog (shows the token once), expiry helpers
 │   └── offline/              retry-button
 ├── components/
 │   ├── ui/                   shadcn components (generated; see below)
-│   └── *.tsx                 app-wide pieces: header, data-table, form-field, page-header, confirm-dialog, logo, service-worker, …
+│   └── *.tsx                 app-wide pieces: header, data-table, form-field, page-header, confirm-dialog, copy-button, logo, service-worker, …
 ├── lib/
 │   ├── orpc.ts               typed api client + TanStack Query utils
 │   ├── session.ts            getSession() for server components
 │   ├── auth-client.ts        Better Auth React client
 │   ├── brand.ts, app-icon.tsx  name, colours, and the icon renderer
 │   ├── build.ts              build-time constants (NODE_ENV, service worker version)
-│   ├── format.ts             dates in the user's locale
+│   ├── format.ts             dates (and date-times) in the user's locale
 │   └── utils.ts
 ├── public/sw.js              the service worker
 └── test/                     component tests (Vitest, Testing Library, MSW); see Testing
@@ -57,7 +60,11 @@ query options.
 
 `next.config.ts` rewrites `/api/auth/*` to the api's Better Auth handler and
 every other `/api/*` to the api root (`/api/account` → `/account`), so the browser
-stays on the web origin and sends the session cookie.
+stays on the web origin and sends the session cookie. CI uploads lockfiles
+the same way, to `POST /api/uploads` on the web origin (the command on the
+project page), so the rewrite must forward bodies of up to 20 MB:
+`experimental.proxyClientMaxBodySize` raises Next's 10 MB default for
+proxied request bodies.
 
 `lib/orpc.ts` builds a client from `@repo/contracts` with oRPC's
 `OpenAPILink` (pointing at `/api`) and wraps it with

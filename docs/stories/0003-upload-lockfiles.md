@@ -1,7 +1,7 @@
 ---
 id: S-0003
 title: Upload lockfiles from CI
-status: in-progress # proposed | in-progress | done | dropped
+status: done # proposed | in-progress | done | dropped
 ---
 
 ## Story
@@ -54,5 +54,34 @@ that vulnscan knows what is running where.
 
 ## Implementation
 
-Filled in when the story is done: the main files and routes, and the commits
-(`git log --grep "Story: S-0003"`).
+- **Api:** `POST /uploads` (`packages/contracts/src/uploads/`: multipart,
+  `z.file()` next to the plain fields, with the name, version and path
+  rules), implemented in `apps/api/src/uploads/`. `UploadTokenGuard`
+  authenticates the bearer token (401 in oRPC's error shape) and refuses a
+  `Content-Length` far over 20 MB before the body is read; the route is
+  `@AllowAnonymous()` to Better Auth. `UploadsService` finds or creates the
+  `Environment` and `Release` (a new version becomes live), adds or
+  replaces the `Lockfile` at the path, writes the file through
+  `@repo/storage` under the project's prefix (see
+  [Storage](../storage.md#key-layout); 503 without storage), and sets the
+  token's `lastUsedAt` (entities in `packages/entities/src/`:
+  `environment.entity.ts`, `release.entity.ts`, `lockfile.entity.ts`).
+  `GET /projects/{projectId}/environments`
+  (`packages/contracts/src/environments/`, `apps/api/src/environments/`)
+  lists the environments by name with their live release's version and
+  upload date.
+- **Web:** on the project page, the Environments section
+  (`apps/web/containers/environments/environments-section.tsx`; on phones
+  the version and date fold into the name cell), and the Upload from CI
+  section (`upload-example.tsx`): a `curl` command to copy, posting to the
+  web origin's `/api/uploads` with the token in `$VULNSCAN_TOKEN`, and what
+  each field means. The Tokens section shows each token's last used date
+  (S-0002). `apps/web/next.config.ts` raises Next's limit on proxied
+  request bodies (`experimental.proxyClientMaxBodySize`, 10 MB by default)
+  so 20 MB uploads reach the api whole.
+- **Tests:** `apps/api/test/uploads/` and `apps/api/test/environments/`
+  with the cases in `packages/fixtures/src/api/uploads/` and
+  `environments/`, `apps/web/test/environments/`, and the browser tests in
+  `apps/e2e/tests/uploads.spec.ts` (AC9 and AC10, uploading through
+  `uploadLockfile` in `helpers/api.ts`).
+- **Commits:** `git log --grep "Story: S-0003"`.
