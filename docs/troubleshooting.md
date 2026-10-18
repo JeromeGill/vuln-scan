@@ -153,6 +153,17 @@ shared object has no `message` once a schema has been built from it. Share
 the message string, not the params object (export a `const …Message` next
 to the schema).
 
+## Uploads over 10 MB through the web app fail with a 500
+
+The web app logs `Request body exceeded 10MB for /api/uploads. Only the
+first 10MB will be available unless configured.` and then
+`Failed to proxy … socket hang up`. Next.js buffers request bodies that its
+`/api` rewrite proxies to the api, and forwards only the first
+`experimental.proxyClientMaxBodySize` bytes (10 MB by default), so a larger
+upload reaches the api cut short. `apps/web/next.config.ts` sets it a little
+above the 20 MB lockfile limit; raise it with the limit. Requests sent to
+the api directly (as the api's integration tests do) aren't affected.
+
 ## Emails take seconds to send locally (Mailpit)
 
 Mailpit looks up the reverse DNS of every SMTP client before its greeting,

@@ -11,13 +11,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
+import { EnvironmentsSection } from "@/containers/environments/environments-section";
+import { UploadExample } from "@/containers/environments/upload-example";
 import { UploadTokensSection } from "@/containers/upload-tokens/upload-tokens-section";
 import { DeleteProjectDialog } from "./delete-project-dialog";
 import { RenameProjectDialog } from "./rename-project-dialog";
 
 /**
- * A project's page: its upload tokens, and renaming or deleting it.
- * Environments (S-0003) come next.
+ * A project's page: its environments, its upload tokens and how CI uploads
+ * with one, and renaming or deleting it.
  */
 export function ProjectPage({ id }: { id: string }) {
   const { data: project, error } = useQuery(
@@ -52,7 +54,11 @@ export function ProjectPage({ id }: { id: string }) {
               </>
             }
           />
-          <UploadTokensSection projectId={project.id} />
+          <div className="space-y-10">
+            <EnvironmentsSection projectId={project.id} />
+            <UploadTokensSection projectId={project.id} />
+            <UploadExample />
+          </div>
           <RenameProjectDialog
             project={project}
             open={renaming}

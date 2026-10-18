@@ -4,10 +4,11 @@ import type {
   AccountDto,
   Contract,
   CreatedUploadTokenDto,
+  EnvironmentDto,
   ProjectDto,
   UploadTokenDto,
 } from "@repo/contracts";
-import { projects, uploadTokens, users } from "@repo/fixtures";
+import { deployments, projects, uploadTokens, users } from "@repo/fixtures";
 import { HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
@@ -87,5 +88,22 @@ export function aCreatedUploadToken(
   return {
     ...anUploadToken({ lastFour: token.slice(-4), ...fields }),
     token,
+  };
+}
+
+/**
+ * An environment as the api lists it: the first fixture environment, with
+ * the first fixture version live, and `fields` on top.
+ */
+export function anEnvironment(
+  fields: Partial<EnvironmentDto> = {},
+): EnvironmentDto {
+  const [name] = deployments.environments;
+  const [version] = deployments.versions;
+  return {
+    id: "00000000-0000-4000-8000-000000000301",
+    name,
+    liveRelease: { version, uploadedAt: new Date("2026-10-03T09:00:00Z") },
+    ...fields,
   };
 }

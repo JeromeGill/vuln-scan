@@ -5,7 +5,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectPage } from "@/containers/projects/project-page";
 import { formatDate } from "@/lib/format";
 import { renderWithProviders } from "../render";
-import { anUploadToken, aProject, apiError, server } from "../server";
+import {
+  anEnvironment,
+  anUploadToken,
+  aProject,
+  apiError,
+  server,
+} from "../server";
 
 // Deleting goes back to the dashboard with Next's router, which only exists
 // inside a running Next.js app. A stub that records where it was sent
@@ -14,10 +20,16 @@ const router = vi.hoisted(() => ({ push: vi.fn<(href: string) => void>() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 beforeEach(() => router.push.mockClear());
 
-/** Answers the project page's requests for `project`, with no tokens. */
+/**
+ * Answers the project page's requests for `project`, with no environments
+ * or tokens.
+ */
 function serveProject(project: ReturnType<typeof aProject>) {
   server.use(
     http.get(`/api/projects/${project.id}`, () => HttpResponse.json(project)),
+    http.get(`/api/projects/${project.id}/environments`, () =>
+      HttpResponse.json({ items: [], total: 0 }),
+    ),
     http.get(`/api/projects/${project.id}/upload-tokens`, () =>
       HttpResponse.json({ items: [], total: 0 }),
     ),
@@ -25,11 +37,15 @@ function serveProject(project: ReturnType<typeof aProject>) {
 }
 
 describe("Project page", () => {
-  it("shows the project's name, when it was created, and its tokens", async () => {
+  it("shows the project's name, when it was created, its environments, its tokens, and how to upload", async () => {
     const project = aProject();
+    const environment = anEnvironment();
     const token = anUploadToken();
     server.use(
       http.get(`/api/projects/${project.id}`, () => HttpResponse.json(project)),
+      http.get(`/api/projects/${project.id}/environments`, () =>
+        HttpResponse.json({ items: [environment], total: 1 }),
+      ),
       http.get(`/api/projects/${project.id}/upload-tokens`, () =>
         HttpResponse.json({ items: [token], total: 1 }),
       ),
@@ -43,9 +59,12 @@ describe("Project page", () => {
     expect(
       screen.getByText(`Created ${formatDate(project.createdAt)}`),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { level: 2, name: "Tokens" }),
-    ).toBeInTheDocument();
+    for (const name of ["Environments", "Tokens", "Upload from CI"]) {
+      expect(
+        screen.getByRole("heading", { level: 2, name }),
+      ).toBeInTheDocument();
+    }
+    expect(await screen.findByText(environment.name)).toBeInTheDocument();
     expect(await screen.findByText(token.name)).toBeInTheDocument();
   });
 
