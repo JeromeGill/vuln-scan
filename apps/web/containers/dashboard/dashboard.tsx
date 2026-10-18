@@ -1,29 +1,30 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
+import { useState } from "react";
 import { PageHeader } from "@/components/page-header";
-import { Skeleton } from "@/components/ui/skeleton";
-import { orpc } from "@/lib/orpc";
+import { Button } from "@/components/ui/button";
+import { CreateProjectDialog } from "@/containers/projects/create-project-dialog";
+import { ProjectsTable } from "@/containers/projects/projects-table";
 
-/**
- * The signed-in landing page. A placeholder: it loads the account through
- * the oRPC client, as feature pages will load their data.
- */
+/** The signed-in landing page: the user's projects. */
 export function Dashboard() {
-  const { data: account, isError } = useQuery(orpc.account.get.queryOptions());
+  const [creating, setCreating] = useState(false);
 
   return (
     <>
-      <PageHeader title="Dashboard" />
-      {account ? (
-        <p>
-          Signed in as {account.name} ({account.email}).
-        </p>
-      ) : isError ? (
-        <p role="alert">Couldn&apos;t load your account.</p>
-      ) : (
-        <Skeleton className="h-5 w-64" />
-      )}
+      <PageHeader
+        title="Dashboard"
+        description="Your projects, newest first."
+        actions={
+          <Button onClick={() => setCreating(true)}>
+            <Plus />
+            New project
+          </Button>
+        }
+      />
+      <ProjectsTable onCreate={() => setCreating(true)} />
+      <CreateProjectDialog open={creating} onOpenChange={setCreating} />
     </>
   );
 }

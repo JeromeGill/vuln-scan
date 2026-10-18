@@ -22,4 +22,10 @@ export const allowlist: { pattern: RegExp; test?: RegExp; reason: string }[] = [
     reason:
       "The test logs in before verifying the email on purpose; Chrome logs the api's 403 EMAIL_NOT_VERIFIED.",
   },
+  {
+    test: /^S-0001 AC3: /,
+    pattern: /status of 409 \(Conflict\)/,
+    reason:
+      "The test creates a project with a taken name on purpose; Chrome logs the api's 409 CONFLICT.",
+  },
 ];

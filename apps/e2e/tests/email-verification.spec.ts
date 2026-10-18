@@ -28,9 +28,11 @@ test("signs up, opens the emailed link, and lands on the dashboard", async ({
 
   await page.goto(await verificationLink(email));
   await expect(page).toHaveURL("/dashboard");
-  await expect(
-    page.getByText(`Signed in as ${users[0].name} (${email}).`),
-  ).toBeVisible();
+  // Signed in as the new user: the account menu names them.
+  await page.getByRole("button", { name: "Account" }).click();
+  const menu = page.getByRole("menu");
+  await expect(menu.getByText(users[0].name, { exact: true })).toBeVisible();
+  await expect(menu.getByText(email, { exact: true })).toBeVisible();
 });
 
 test("logging in before verifying says to verify first", async ({
