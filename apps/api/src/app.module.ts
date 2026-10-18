@@ -9,6 +9,7 @@ import { databaseOptions } from "./database.js";
 import { JobPublisher } from "./messaging/job-publisher.js";
 import { MessagingModule } from "./messaging/messaging.module.js";
 import { orpcConfig } from "./orpc.js";
+import { ProjectsModule } from "./projects/projects.module.js";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { orpcConfig } from "./orpc.js";
     }),
     ORPCModule.forRoot(orpcConfig),
     AccountModule,
+    ProjectsModule,
   ],
 })
 export class AppModule {}

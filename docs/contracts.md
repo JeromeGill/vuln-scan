@@ -14,9 +14,13 @@ truth.
 packages/contracts/src/
 ├── base.ts            base builder (shared errors) + shared params/helpers
 ├── index.ts           re-exports everything; `contract` = the whole API
-└── account/
-    ├── schemas.ts     response shapes and POST/PATCH bodies
-    └── contracts.ts   the routes
+├── account/
+│   ├── schemas.ts     response shapes and POST/PATCH bodies
+│   └── contracts.ts   the routes
+└── projects/
+    ├── schemas.ts
+    ├── params.ts      GET query parameters
+    └── contracts.ts
 ```
 
 A resource with GET query parameters adds a `params.ts` next to them.
@@ -48,13 +52,22 @@ import them.
 
 ## Routes
 
-| Resource | Routes                                                   |
-| -------- | -------------------------------------------------------- |
-| account  | `GET /account`: the signed-in user's id, name, and email |
+| Resource | Routes                                                                                                                                                                                                               |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| account  | `GET /account`: the signed-in user's id, name, and email                                                                                                                                                             |
+| projects | `GET /projects` (paginated, newest first), `POST /projects`, `GET /projects/{id}`, `PATCH /projects/{id}` (rename), `DELETE /projects/{id}`: the active organization's projects ([S-0001](stories/0001-projects.md)) |
 
 `account` is an example: it shows the whole path from the web app's client
 through the proxy to an `@Implement`ed controller, and the browser tests
 cover it through the dashboard page.
+
+`projects` is the first owned resource: the controller takes the
+organization from the session's `activeOrganizationId` (see
+[Authentication](auth.md#organizations)) and the service scopes every query
+to it, so another organization's project is `NOT_FOUND`. A name the
+organization already uses, ignoring case and surrounding spaces, is a
+`CONFLICT` (the database's unique constraint, mapped by
+`isUniqueViolation` in `apps/api/src/database-errors.ts`).
 
 Inputs use oRPC's default **compact** structure: path parameters, query, and
 body are merged into one input object (e.g. `PATCH /widgets/{id}` takes
@@ -109,5 +122,5 @@ oRPC's error shape.
 3. Re-export the files from `src/index.ts` and add the router to
    `contract`.
 4. In the api, add `src/<resource>/` with a module, controller, and service
-   following `account/`, import the module in `AppModule`, and add one spec
+   following `projects/`, import the module in `AppModule`, and add one spec
    per route (see [Testing a new endpoint](testing.md#testing-a-new-endpoint)).

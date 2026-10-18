@@ -13,7 +13,9 @@ try {
   // Fixture users are verified without an email, so nothing is published.
   const auth = createAuth(dataSource, { publish: async () => {} });
   const result = await seedFixtures(dataSource, auth);
-  console.log(`Seeded ${env.DB_NAME}: created ${result.users} users.`);
+  console.log(
+    `Seeded ${env.DB_NAME}: created ${result.users} users and ${result.projects} projects.`,
+  );
 } finally {
   await dataSource.destroy();
 }
