@@ -9,6 +9,7 @@ export {
   EmailDelivery,
   type EmailDeliveryStatus,
 } from "./email-delivery.entity.js";
+export { Project } from "./project.entity.js";
 
 export * from "./data-source.js";
 export { entities } from "./entities.js";

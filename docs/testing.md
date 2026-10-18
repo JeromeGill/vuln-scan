@@ -141,8 +141,9 @@ For api routes, use the helpers in `test/helpers/`. `app.ts`:
   emails)`, which also deletes the users' (personal) organizations, since
   those don't cascade from the user.
 
-Add `test/helpers/builders.ts` with the first resource that needs rows set
-up through the api (see [Testing a new endpoint](#testing-a-new-endpoint)).
+`test/helpers/builders.ts` creates the rows a spec needs through the api
+(so far `createProject`; see
+[Testing a new endpoint](#testing-a-new-endpoint)).
 
 The integration tests run with dummy Google credentials
 (`vitest.config.integration.ts`), so Google sign-in is on; the Google spec
@@ -157,8 +158,11 @@ and its successful requests come from cases in `@repo/fixtures/api` that
 the web tests share (why: see
 [Decisions](decisions/one-api-spec-per-endpoint-with-shared-request-and-response-cases.md)).
 Every new route gets the same: follow the checklist below.
-`test/account/get-account.integration.spec.ts` is the one so far (a route
-with no body, so plain `it`s and no cases).
+`test/projects/` is the model to copy: `create-project` and
+`rename-project` run cases (rename's with a `given`), `list-projects` runs
+query cases, and `get-project` and `delete-project` take no body or query,
+so plain `it`s. `test/account/get-account.integration.spec.ts` is the
+smallest (no input, one user).
 
 #### Testing a new endpoint
 

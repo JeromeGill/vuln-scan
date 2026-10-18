@@ -49,7 +49,8 @@ apps/web (Next.js)
   │                                   Postgres (docker compose)
   │                                     auth schema: user, session,
   │                                     account, verification
-  │                                     public schema: email_delivery
+  │                                     public schema: email_delivery,
+  │                                     project
   │                                            ▲
   │                                            │ TypeORM (never syncs)
   │      RabbitMQ ──jobs (JSON)──▶ apps/worker ┘

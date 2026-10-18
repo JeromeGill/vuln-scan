@@ -1,5 +1,5 @@
-import { BaMember, BaUser } from "@repo/entities";
-import { fixturePassword, users } from "@repo/fixtures";
+import { BaMember, BaUser, Project } from "@repo/entities";
+import { fixturePassword, projects, users } from "@repo/fixtures";
 import { DataSource, In } from "typeorm";
 import { createAuth, type Auth } from "../../src/auth/auth.js";
 import { initializeDataSource } from "../../src/database.js";
@@ -25,6 +25,7 @@ describe("Fixtures: seed (integration)", () => {
   it("signs up every fixture user, verified, with the fixture password", async () => {
     await expect(seedFixtures(dataSource, auth)).resolves.toEqual({
       users: users.length,
+      projects: projects.length,
     });
 
     const seeded = await dataSource
@@ -53,7 +54,31 @@ describe("Fixtures: seed (integration)", () => {
     expect(memberships.every(({ role }) => role === "owner")).toBe(true);
   });
 
+  it("creates the fixture projects in their owners' organizations", async () => {
+    const organizationIds: string[] = [];
+    for (const { name, owner } of projects) {
+      const user = await dataSource
+        .getRepository(BaUser)
+        .findOneByOrFail({ email: owner });
+      const { organizationId } = await dataSource
+        .getRepository(BaMember)
+        .findOneByOrFail({ userId: user.id });
+      organizationIds.push(organizationId);
+      await expect(
+        dataSource.getRepository(Project).existsBy({ organizationId, name }),
+      ).resolves.toBe(true);
+    }
+    await expect(
+      dataSource
+        .getRepository(Project)
+        .countBy({ organizationId: In(organizationIds) }),
+    ).resolves.toBe(projects.length);
+  });
+
   it("is idempotent", async () => {
-    await expect(seedFixtures(dataSource, auth)).resolves.toEqual({ users: 0 });
+    await expect(seedFixtures(dataSource, auth)).resolves.toEqual({
+      users: 0,
+      projects: 0,
+    });
   });
 });
