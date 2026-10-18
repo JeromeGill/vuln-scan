@@ -137,7 +137,9 @@ For api routes, use the helpers in `test/helpers/`. `app.ts`:
   flow, one extra request. `signUpUnverified(app, email)` stops before the
   link.
 - `deleteUsersAndClose(app, users)` is the `afterAll`; `uniqueEmail()`
-  gives an address that won't collide.
+  gives an address that won't collide. It calls `deleteUsers(dataSource,
+  emails)`, which also deletes the users' (personal) organizations, since
+  those don't cascade from the user.
 
 Add `test/helpers/builders.ts` with the first resource that needs rows set
 up through the api (see [Testing a new endpoint](#testing-a-new-endpoint)).

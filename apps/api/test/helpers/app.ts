@@ -1,5 +1,5 @@
 import { INestApplication } from "@nestjs/common";
-import { BaUser } from "@repo/entities";
+import { BaMember, BaOrganization, BaUser } from "@repo/entities";
 import {
   verifyEmail,
   type Envelope,
@@ -121,16 +121,42 @@ export async function signUp(
 }
 
 /**
- * Deletes users made with `signUp` (their sessions and accounts cascade),
- * then closes the app. For `afterAll`, so it tolerates a failed `beforeAll`.
+ * Deletes the users with `emails` and the organizations they belong to (a
+ * personal one each). Their sessions, accounts, and memberships cascade.
+ */
+export async function deleteUsers(
+  dataSource: DataSource,
+  emails: string[],
+): Promise<void> {
+  const rows = await dataSource
+    .getRepository(BaUser)
+    .findBy({ email: In(emails) });
+  if (rows.length === 0) return;
+  const userIds = rows.map((user) => user.id);
+  const memberships = await dataSource
+    .getRepository(BaMember)
+    .findBy({ userId: In(userIds) });
+  if (memberships.length > 0) {
+    await dataSource.getRepository(BaOrganization).delete({
+      id: In(memberships.map((member) => member.organizationId)),
+    });
+  }
+  await dataSource.getRepository(BaUser).delete({ id: In(userIds) });
+}
+
+/**
+ * Deletes users made with `signUp` (see `deleteUsers`), then closes the
+ * app. For `afterAll`, so it tolerates a failed `beforeAll`.
  */
 export async function deleteUsersAndClose(
   app: INestApplication<App> | undefined,
   testUsers: (Pick<TestUser, "email"> | undefined)[],
 ): Promise<void> {
-  await app
-    ?.get(DataSource)
-    .getRepository(BaUser)
-    .delete({ email: In(testUsers.map((user) => user?.email)) });
+  if (app) {
+    await deleteUsers(
+      app.get(DataSource),
+      testUsers.flatMap((user) => (user ? [user.email] : [])),
+    );
+  }
   await app?.close();
 }

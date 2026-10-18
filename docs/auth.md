@@ -1,7 +1,8 @@
 # Authentication
 
 Authentication uses [Better Auth](https://www.better-auth.com/) with email and
-password. The server runs inside the NestJS api, and the web app uses Better
+password (and optionally Google), plus its organization plugin for each
+user's personal organization. The server runs inside the NestJS api, and the web app uses Better
 Auth's React client.
 
 ## API side
@@ -20,7 +21,8 @@ Auth's React client.
   urlencoded parsers for other routes. Tests must do the same.
 - **Database:** Better Auth uses the in-repo adapter
   `apps/api/src/auth/typeorm-adapter.ts`. `createAuth` passes it a map from
-  Better Auth model keys (`user`, `session`, `account`, `verification`) to
+  Better Auth model keys (`user`, `session`, `account`, `verification`,
+  and the organization plugin's `organization`, `member`, `invitation`) to
   entities, so table and schema names are up to the entities (they live in
   the `auth` schema; see [Database](database.md#better-auth-tables)). The
   adapter runs Better Auth's multi-step writes (such as sign-up creating a
@@ -133,6 +135,41 @@ without Google.
   OpenTofu resource. Add each web origin's
   `/api/auth/callback/google` as an authorised redirect URI.
 
+### Organizations
+
+Better Auth's organization plugin (`organization()` in `createAuth`; the
+teams sub-feature is off). App data such as projects belongs to an
+organization, never directly to a user, so teams later are "an organization
+with more members", not a data model change (see
+[P-0001](plans/0001-vulnerability-monitoring.md)). For now every user has
+exactly one, their **personal organization**, which they never see or name:
+
+- **Created at sign-up**, for email/password, Google, and seeded users
+  alike: `databaseHooks.user.create.after` calls
+  `auth.api.createOrganization` as a server call (no headers, the user's
+  id in the body), which makes the user its `owner`. The hook runs once the
+  transaction that created the user has committed, and before a Google
+  sign-in creates its first session. Name `Personal`; slug
+  `personal-<user id>` (`personalOrganizationSlug`), unique because the user
+  id is. If creating it fails, the sign-up request fails, though the user
+  row is already committed.
+- **Every session works in it:** `databaseHooks.session.create.before` sets
+  `session.activeOrganizationId` to the user's first membership (the
+  personal organization), so routes can take the organization from
+  `session.session.activeOrganizationId` (returned by `get-session` too).
+- **Locked down until teams:** `allowUserToCreateOrganization: false` (the
+  sign-up hook's server call is still allowed), `disableOrganizationDeletion:
+  true`, and `membershipLimit: 1`, so a user can't make more organizations,
+  delete theirs, or add members. The plugin's other endpoints under
+  `/api/auth/organization/*` (e.g. `list`, `get-full-organization`) work for
+  the signed-in user; the web app doesn't call any yet. No invitation email
+  is configured.
+- Why a hook, the slug, and the active organization: see
+  [Decisions](decisions/personal-organizations-are-made-by-a-user-creation-hook.md).
+- **Deleting a user** deletes their memberships and invitations (cascade),
+  not the organization: delete that explicitly (the api tests'
+  `deleteUsers` helper does).
+
 ## Web side
 
 - **Proxy:** `apps/web/next.config.ts` rewrites `/api/auth/*` to
@@ -179,7 +216,8 @@ accordingly.
 ## Rules
 
 - **Never write to the Better Auth tables directly** (`BaUser`, `BaSession`,
-  `BaAccount`, `BaVerification`; the `auth` schema). Use Better Auth instead:
+  `BaAccount`, `BaVerification`, `BaOrganization`, `BaMember`,
+  `BaInvitation`; the `auth` schema). Use Better Auth instead:
   `auth.api.*`, the injected `AuthService` from `@thallesp/nestjs-better-auth`,
   or its HTTP endpoints. This keeps password hashing, hooks, and session
   handling consistent.

@@ -1,7 +1,7 @@
 ---
 id: S-0001
 title: Create and manage projects
-status: proposed # proposed | in-progress | done | dropped
+status: in-progress # proposed | in-progress | done | dropped
 ---
 
 ## Story
